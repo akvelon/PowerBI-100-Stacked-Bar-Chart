@@ -86,7 +86,7 @@ module powerbi.extensibility.visual {
         private BarHeight: number = 0;
 
         public settings: VisualSettings;
-        private host: IVisualHost;
+        public host: IVisualHost;
         private dataView: DataView;
         private data: VisualData;
         public visualSize: ISize;
@@ -112,6 +112,7 @@ module powerbi.extensibility.visual {
 
         private hasHighlight: boolean;
         private isLegendNeeded: boolean;
+        private isSelectionRestored: boolean = false;
 
         private metadata: VisualMeasureMetadata;
 
@@ -120,6 +121,7 @@ module powerbi.extensibility.visual {
         private visualTranslation: VisualTranslation;
 
         private dataPointsByCategories: CategoryDataPoints[];
+        public skipScrollbarUpdate: boolean = false;
 
         constructor(options: VisualConstructorOptions) {
             // Create d3 selection from main HTML element
@@ -183,6 +185,7 @@ module powerbi.extensibility.visual {
 
         public update(options: VisualUpdateOptions) {
             const dataView = options && options.dataViews && options.dataViews[0];
+
             if (!dataView || options.type === VisualUpdateType.ResizeEnd) {
                 return;
             }
@@ -244,7 +247,8 @@ module powerbi.extensibility.visual {
             // Scrollbar
             let scrollBarState: ScrollbarState = this.getScrollbarState();
 
-            this.scrollBar.updateData(scrollBarState, options.type);
+            this.scrollBar.updateData(scrollBarState, options.type, this.skipScrollbarUpdate);
+            this.skipScrollbarUpdate = false;
 
             let visibleDataPoints: VisualDataPoint[] = this.scrollBar.getVisibleDataPoints();
 
@@ -289,6 +293,21 @@ module powerbi.extensibility.visual {
 
             let bars = this.visualSvgGroup.selectAll(Selectors.BarSelect.selectorName).data(visibleDataPoints);
             this.lassoSelection.update(bars);
+
+            if (!this.isSelectionRestored) {
+                let newDataPoints = this.allDataPoints.filter(d => {
+                    return this.settings.selectionSaveSettings.selection.some(item => {
+                        return (<any>item).identity.key === (<any>d).identity.key;
+                    });
+                });
+
+                if (newDataPoints.length) {
+                    this.webBehaviorSelectionHandler.handleSelection(newDataPoints, false);
+                    this.interactivityService.restoreSelection(newDataPoints.map(d => d.identity as powerbi.visuals.ISelectionId));
+                }
+
+                this.isSelectionRestored = true;                
+            }
         }
 
         getSettings(): VisualSettings {
@@ -304,7 +323,7 @@ module powerbi.extensibility.visual {
         }
 
         public getChartBoundaries(): ClientRect {
-            return (<Element>this.xAxisSvgGroup.node()).getBoundingClientRect();
+            return (<Element>this.clearCatcher.node()).getBoundingClientRect();
         }
 
         getVisualTranslation(): VisualTranslation {
@@ -326,24 +345,6 @@ module powerbi.extensibility.visual {
         getLegendSize(): LegendSize {
             return this.legendSize;
         }
-
-       /* private calculateYAxisWidth(): number {
-            if ( !this.data) {
-                return 0;
-            }
-
-            let textProperties: TextProperties = {
-                fontFamily: this.settings.categoryAxis.fontFamily,
-                fontSize: PixelConverter.toString(this.settings.categoryAxis.fontSize)
-            };
-
-            let maxWidth = 0;
-            for (let i: number = 0; i < this.data.categories.length; i++) {
-                let textWidth = textMeasurementService.measureSvgTextWidth(textProperties, this.data.categories[i]);
-                maxWidth = Math.max(maxWidth, textWidth);
-            }
-            return maxWidth;
-        }*/
 
         public onScrollPosChanged() {
             const visibleDataPoints: VisualDataPoint[] = this.scrollBar.getVisibleDataPoints();
@@ -459,6 +460,7 @@ module powerbi.extensibility.visual {
                 this.interactivityService,
                 this.behavior,
                 this.tooltipServiceWrapper,
+                this.host,
                 this.hasHighlight
             );
 
@@ -559,6 +561,9 @@ module powerbi.extensibility.visual {
             }
             if (!yAxis.showTitle) {
                 yAxis.axisTitle = '';
+            }
+            if (typeof settings.selectionSaveSettings.selection === "string") {
+                settings.selectionSaveSettings.selection = JSON.parse(settings.selectionSaveSettings.selection);
             }
         }
 

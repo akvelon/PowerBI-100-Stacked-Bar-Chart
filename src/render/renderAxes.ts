@@ -48,6 +48,7 @@ module powerbi.extensibility.visual {
                 isVertical: false,
                 isCategoryAxis: false,
                 scaleType: valueAxisScale,
+                disableNice: settings.valueAxis.start != null || settings.valueAxis.end != null,
                 useTickIntervalForDisplayUnits: true
             });
 
@@ -101,6 +102,7 @@ module powerbi.extensibility.visual {
                 isVertical: true,
                 isCategoryAxis: true,
                 useTickIntervalForDisplayUnits: true,
+                disableNice: axisType === "continuous" && (settings.categoryAxis.start != null || settings.categoryAxis.end != null),
                 getValueFn: (index: number, dataType: valueType): any => {
                     if (dataType.dateTime && dateColumnFormatter) {
                         let options = {};
@@ -367,13 +369,34 @@ module powerbi.extensibility.visual {
                 let dataDomainMinY: number = d3.min(visibleDatapoints, d => <number>d.category);
                 let dataDomainMaxY: number = d3.max(visibleDatapoints, d => <number>d.category);
 
-                dataDomainY = [dataDomainMinY, dataDomainMaxY];
+                let start = settings.categoryAxis.start;
+                let end = settings.categoryAxis.end;
+
+                dataDomainY = [start != null ? settings.categoryAxis.start : dataDomainMinY, end != null ? end : dataDomainMaxY];
+            }
+
+            let constantLineValue: number = settings.constantLine.value;
+
+            if (constantLineValue || constantLineValue === 0) {
+                dataDomainMinX = dataDomainMinX > constantLineValue ? constantLineValue : dataDomainMinX;
+                dataDomainMaxX = dataDomainMaxX < constantLineValue ? constantLineValue : dataDomainMaxX;
+            }
+
+            let start = settings.valueAxis.start;
+            let end = settings.valueAxis.end;
+
+            if (start != null){
+                dataDomainMinX = start;
+            }
+
+            if ( settings.valueAxis.axisScale === 'log' && dataDomainMinX === 0 ){
+                dataDomainMinX = .001;
             }
 
             return {
                 yAxisDomain: dataDomainY,
-                xAxisDomain: [dataDomainMinX, dataDomainMaxX]
-            };
+                xAxisDomain: [dataDomainMinX, end != null ? end : dataDomainMaxX]
+            }
         }
     }
 

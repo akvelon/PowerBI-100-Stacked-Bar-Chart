@@ -423,7 +423,7 @@ module powerbi.extensibility.visual {
                 this.data.categories,
                 this.settings.categoryAxis.innerPadding,
                 this.data.axes.y.scale,
-                this.settings.categoryAxis.axisType);
+                this.settings);
         }
 
         private renderAxes(maxYLabelsWidth = null): void {
@@ -485,6 +485,9 @@ module powerbi.extensibility.visual {
                 this.settings,
                 this.labelGraphicsContext
             );
+
+            let yHeight: number = (<Element>this.xAxisSvgGroup.selectAll("line").node()).getBoundingClientRect().height;
+            RenderVisual.renderConstantLine(this.settings.constantLine, this.visualSvgGroup, this.data.axes, yHeight);
         }
 
         private calculateLegendSize(settings: legendSettings, legendElementRoot: d3.Selection<SVGElement>): LegendSize {

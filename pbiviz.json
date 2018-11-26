@@ -1,10 +1,10 @@
 {
   "visual": {
     "name": "100PercentStackedBarChartByAkvelon",
-    "displayName": "100% Stacked Bar Chart by Akvelon 1.0.1",
+    "displayName": "100% Stacked Bar Chart by Akvelon 1.1.0",
     "guid": "PercentStackedBarChartByAkvelonFF31FCEB97BB434E8117D153042574E8",
     "visualClassName": "Visual",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "100% Stacked Bar Chart with rectangle selection support",
     "supportUrl": "http://akvelon.com/feedback",
     "gitHubUrl": ""

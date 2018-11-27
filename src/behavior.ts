@@ -89,11 +89,6 @@ module powerbi.extensibility.visual {
                     return Visual.DefaultStrokeWidth;
                 }
             });
-
-            if ((hasSelection || currentSelection.length === 0) && !visualUtils.compareObjects(currentSelection, this.options.selectionSaveSettings, "identity.key")) {
-                this.visual.skipScrollbarUpdate = true;
-                selectionSaveUtils.saveSelection(currentSelection, this.options.host);
-            }
         }
     }
 }

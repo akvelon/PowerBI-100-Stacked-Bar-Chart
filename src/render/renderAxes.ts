@@ -122,7 +122,7 @@ module powerbi.extensibility.visual {
 
                         let formattedString: string = dateColumnFormatter.format(new Date(index).toLocaleString("en-US", options));
 
-                        if (maxYLabelsWidth) {                            
+                        if (maxYLabelsWidth && axisType !== "continuous") {                            
 
                             let textProperties: TextProperties = {
                                 text: formattedString,
@@ -136,7 +136,7 @@ module powerbi.extensibility.visual {
                         return formattedString;
                     }
                     
-                    if (maxYLabelsWidth) {                            
+                    if (maxYLabelsWidth && axisType !== "continuous") {                            
 
                         let textProperties: TextProperties = {
                             text: index.toString(),
@@ -293,8 +293,9 @@ module powerbi.extensibility.visual {
 
                     textSelectionX.attr({
                         "transform": svg.translate(
-                            (width + margin.left) / RenderAxes.AxisLabelOffset,
-                            (height + visualSize.height + xFontSize + margin.top) / 2)
+                            (width) / RenderAxes.AxisLabelOffset,
+                            (height + visualSize.height + xFontSize + margin.top) / 2),
+                        "dy": '.8em'
                     });
 
                     if (showXAxisTitle && xTitle && xTitle.toString().length > 0) {
@@ -321,7 +322,7 @@ module powerbi.extensibility.visual {
                             ? width - margin.right - yFontSize
                             : 0,
                         "x": -((visualSize.height + margin.top + margin.bottom) / RenderAxes.AxisLabelOffset),
-                        "dy": RenderAxes.DefaultDY
+                        "dy": (showY1OnRight ? '-' : '') + RenderAxes.DefaultDY
                     });
 
                     if (showYAxisTitle && yTitle && yTitle.toString().length > 0) {

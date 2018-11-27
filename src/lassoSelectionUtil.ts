@@ -1,5 +1,12 @@
 module powerbi.extensibility.visual.visualUtils {
 
+    /*
+        undefined, null - no selection
+        'selected' - selected
+        'justSelected' - is being selected by the lasso with changing opacity, but not really selected yet. Will be added to the selection on mouseup
+        'justRemoved' - is being removed by the lasso with changing opacity, but not really removed yet. Will be removed from the selection on mouseup
+    */
+
     interface Selection {
         action: string;
         active: boolean;
@@ -38,8 +45,10 @@ module powerbi.extensibility.visual.visualUtils {
         }
 
         init(mainElement: d3.Selection<HTMLElement>): void {
-            this.selection.rect = mainElement.append('div').classed('selection-rect', true);
-            this.selection.rect_node = this.selection.rect.node() as HTMLElement;
+            if ( !this.selection.rect ){
+                this.selection.rect = mainElement.append('div').classed('selection-rect', true).classed('selection-rect-normal-chart', true);
+                this.selection.rect_node = this.selection.rect.node() as HTMLElement;
+            }
 
             d3.select('.bar-chart-svg').on('mousedown.selection', () => { this.onMousedown(); });
             d3.select('html')
@@ -53,6 +62,14 @@ module powerbi.extensibility.visual.visualUtils {
             bars.each(function (datum: Datum, index: number, outerIndex: number) {
                 barsArray.push(this);
             });
+        }
+
+        disable(): void {
+            this.emptySelection();
+            d3.select('.bar-chart-svg').on('mousedown.selection', null);
+            d3.select('html')
+                .on('mousemove.selection', null)
+                .on('mouseup.selection', null);
         }
 
         getSelectionStates(): SelectionState[] {
@@ -88,6 +105,7 @@ module powerbi.extensibility.visual.visualUtils {
             if (!this.selection.mousemoved) {
                 if (!e.ctrlKey) {
                     this.visual.webBehaviorSelectionHandler.handleClearSelection();
+                    this.visual.saveSelection();
                 }
 
                 this.selection.mousemoved = true;
@@ -106,7 +124,7 @@ module powerbi.extensibility.visual.visualUtils {
                 if (collided) {
                     // Firstly catch the case when we enable the "remove" mode
                     if (( this.selectionStates.indexOf('justSelected') === -1 || this.selectionStates.indexOf('justRemoved') > -1)
-                        && state === 'selected') {
+                            && state === 'selected') {
 
                         this.selection.action = 'remove';
                         this.selectionStates[scrollIndex + i] = 'justRemoved';
@@ -118,22 +136,21 @@ module powerbi.extensibility.visual.visualUtils {
                         && state !== 'justSelected') {
 
                         this.selectionStates[scrollIndex + i] = 'justSelected';
-
                     } else if (this.selection.action === 'remove'
-                        && state !== 'justRemoved'
-                        && state != null) {
+                        && state == 'selected') {
 
                         this.selectionStates[scrollIndex + i] = 'justRemoved';
                     }
 
-                } else if (this.selection.action === 'add' 
+                } else if (this.selection.action === 'add'
                             && state === 'justSelected'
                             && state !== null) {
+
                     this.selectionStates[scrollIndex + i] = null;
                 }
             }
 
-            if ( this.isEntireCategorySelection() ) {
+            if (this.isEntireCategorySelection()) {
                 this.selectEntireCategories();
             }
 
@@ -169,6 +186,7 @@ module powerbi.extensibility.visual.visualUtils {
             this.deactivateRect();
             this.applySelectionToTheVisual();
         }
+        // /Events
 
         private isEntireCategorySelection(): boolean {
             let dataView: DataView = this.visual.getDataView();
@@ -186,12 +204,12 @@ module powerbi.extensibility.visual.visualUtils {
             let dataPointsByCategories: CategoryDataPoints[] = this.visual.getDataPointsByCategories();
             let allDataPointsIndex: number = 0;
 
-            for (let categoryIndex: number = 0; categoryIndex < dataPointsByCategories.length; categoryIndex++ ) {
+            for (let categoryIndex: number = 0; categoryIndex < dataPointsByCategories.length; categoryIndex++) {
                 let dataPoints: VisualDataPoint[] = dataPointsByCategories[categoryIndex].dataPoints;
                 let firstItemIndex: number = allDataPointsIndex;
                 let categorySelectionStates: SelectionState[] = [];
 
-                for (let categoryDataPointsIndex: number = 0; categoryDataPointsIndex < dataPoints.length; categoryDataPointsIndex++ ) {
+                for (let categoryDataPointsIndex: number = 0; categoryDataPointsIndex < dataPoints.length; categoryDataPointsIndex++) {
                     let selectionState: SelectionState = this.selectionStates[allDataPointsIndex];
                     categorySelectionStates.push(selectionState);
                     allDataPointsIndex++;
@@ -201,9 +219,9 @@ module powerbi.extensibility.visual.visualUtils {
                     for (let i: number = 0; i < categorySelectionStates.length; i++) {
                         this.selectionStates[firstItemIndex + i] = 'justRemoved';
                     }
-                } else if (categorySelectionStates.indexOf('selected') !== -1 || categorySelectionStates.indexOf('justSelected') !== -1) {
+                } else if ( categorySelectionStates.indexOf('selected') !== -1 || categorySelectionStates.indexOf('justSelected') !== -1) {
                     for (let i: number = 0; i < categorySelectionStates.length; i++) {
-                        if ( this.selectionStates[firstItemIndex + i] !== 'selected' ) {
+                        if (this.selectionStates[firstItemIndex + i] !== 'selected') {
                             this.selectionStates[firstItemIndex + i] = 'justSelected';
                         }
                     }
@@ -216,28 +234,44 @@ module powerbi.extensibility.visual.visualUtils {
                 throw new Error('"justSelected" and "justRemoved" items can\'t appear at the same time!');
             }
             let allDataPoints: VisualDataPoint[] = this.visual.getAllDataPoints();
-            let selectedDataPoints: VisualDataPoint[] = [];
+            let handledDataPoints: VisualDataPoint[] = [];
 
             let isMultiselect: boolean = (d3.event as MouseEvent).ctrlKey;
 
             for (let i: number = 0; i < allDataPoints.length; i++) {
-                switch ( this.selectionStates[i] ) {
+                switch (this.selectionStates[i]) {
                     case 'justSelected' :
                         this.selectionStates[i] = 'selected';
-                        selectedDataPoints.push( allDataPoints[i] );
+                        handledDataPoints.push(allDataPoints[i]);
                         break;
                     case 'justRemoved' :
                         this.selectionStates[i] = null;
-
-                        if (isMultiselect) {
-                            selectedDataPoints.push(allDataPoints[i]);
-                        }
-
+                        handledDataPoints.push(allDataPoints[i]);
                         break;
                 }
             }
 
-            this.visual.webBehaviorSelectionHandler.handleSelection(selectedDataPoints, isMultiselect);
+            const selectedDataPoints: VisualDataPoint[] = this.getSelectedDataPoints();
+            if ( handledDataPoints.length > 0 ){
+                this.visual.webBehaviorSelectionHandler.handleSelection(handledDataPoints, isMultiselect);
+            } else if ( selectedDataPoints.length === 0 ) {
+                this.visual.webBehaviorSelectionHandler.handleClearSelection();
+            }
+
+            this.visual.saveSelection();
+        }
+
+        private getSelectedDataPoints(): VisualDataPoint[]{
+            const allDataPoints: VisualDataPoint[] = this.visual.getAllDataPoints();
+            const selectedDataPoints: VisualDataPoint[] = [];
+            
+            for (let i: number = 0; i < allDataPoints.length; i++) {
+                if ( this.selectionStates[i] === 'selected' ){
+                    selectedDataPoints.push( allDataPoints[i] );
+                }
+            }
+
+            return selectedDataPoints;
         }
 
         // DOM
@@ -330,6 +364,8 @@ module powerbi.extensibility.visual.visualUtils {
             this.selection.rect_node.setAttribute('style', '');
             this.selection.rect_node.style.backgroundColor = backgroundStyle;
         }
+        // / Rect
+
 
         // Utils
         private detectCollision(bar: HTMLElement): boolean {
@@ -349,5 +385,7 @@ module powerbi.extensibility.visual.visualUtils {
                 return false;
             }
         }
+        // / Utils
+
     }
 }

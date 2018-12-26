@@ -22,6 +22,9 @@ module powerbi.extensibility.visual.visualUtils {
         const skipCategoryStartEnd: boolean = isSmallMultiple && settings.categoryAxis.rangeType !== AxisRangeType.Custom,
             skipValueStartEnd: boolean = isSmallMultiple && settings.valueAxis.rangeType !== AxisRangeType.Custom;
 
+        // Implement correct continuous logic instead of this!!!
+        barHeight = 5 < barHeight ? 5 : barHeight;
+
         dataPoints.forEach(point => {
             let height, width, x, y: number;
 
@@ -104,8 +107,11 @@ module powerbi.extensibility.visual.visualUtils {
 
         if (barHeight && barHeight !== minHeight) {
             dataPointsSorted.forEach(x => {
-                x.barCoordinates.height = x.barCoordinates.height ? minHeight : 0;
-                x.barCoordinates.y = x.barCoordinates.y + barHeight / 2;
+                const padding: number = minHeight / 100 * 20,
+                    height: number = x.barCoordinates.width ? minHeight - padding : 0;
+
+                x.barCoordinates.height = height
+                x.barCoordinates.y = x.barCoordinates.y + barHeight / 2 - height / 2;
             });
         }
     }

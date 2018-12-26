@@ -167,7 +167,7 @@ module powerbi.extensibility.visual {
 
                 if (value != null) {
                     data.push({
-                        category: !legend ? this.Blank : legend,
+                        category: legend !== 0 && !legend ? this.Blank : legend,
                         series: legend,
                         value: value,
                         percentValueForWidth: 1,
@@ -187,7 +187,7 @@ module powerbi.extensibility.visual {
                         highlightTooltipItems.push(this.createPercentTooltipData(valueMetadata, highlightValue, 1, this.Highlighted));
 
                         data.push({
-                            category: !legend ? this.Blank : legend,
+                            category: legend !== 0 && !legend ? this.Blank : legend,
                             series: legend,
                             value: highlightValue,
                             percentValueForWidth: 1,
@@ -257,7 +257,7 @@ module powerbi.extensibility.visual {
                         }
 
                         data.push({
-                            category: !categoryValue ? "(Blank)" : categoryValue,
+                            category: categoryValue !== 0 && !categoryValue ? "(Blank)" : categoryValue,
                             series: legend,
                             value: value,
                             percentValue: percentageValue,
@@ -280,7 +280,7 @@ module powerbi.extensibility.visual {
                             highlightTooltipItems.push(this.createPercentTooltipData(valueMetadata, value, percentageValue, this.Highlighted));
 
                             data.push({
-                                category: !categoryValue ? "(Blank)" : categoryValue,
+                                category: categoryValue !== 0 && !categoryValue ? "(Blank)" : categoryValue,
                                 series: legend,
                                 value: highlightValue,
                                 percentValue: highlightPercentage,
@@ -352,7 +352,7 @@ module powerbi.extensibility.visual {
                         }
 
                         data.push({
-                            category: !category ? "(Blank)" : category,
+                            category: category !== 0 && !category ? "(Blank)" : category,
                             value: value,
                             percentValue: percentageValue,
                             percentValueForWidth: percentageValue >= 0 ? percentageValue : -percentageValue,
@@ -374,7 +374,7 @@ module powerbi.extensibility.visual {
                             highlightTooltipItems.push(this.createPercentTooltipData(valueMetadata, highlightValue, highlightPercentage, this.Highlighted));
 
                             data.push({
-                                category: !category ? "(Blank)" : category,
+                                category: category !== 0 && !category ? "(Blank)" : category,
                                 value: highlightValue,
                                 percentValue: highlightPercentage,
                                 percentValueForWidth: highlightPercentage >= 0 ? highlightPercentage : -highlightPercentage,
@@ -451,7 +451,7 @@ module powerbi.extensibility.visual {
                     }
 
                     data.push({
-                        category: !category ? "(Blank)" : category,
+                        category: category !== 0 && !category ? "(Blank)" : category,
                         value: value,
                         percentValue: 1,
                         percentValueForWidth: 1,
@@ -475,7 +475,7 @@ module powerbi.extensibility.visual {
                         let percentValue: number = highlightValue / value;
 
                         data.push({
-                            category: !category ? "(Blank)" : category,
+                            category: category !== 0 && !category ? "(Blank)" : category,
                             value: highlightValue,
                             percentValue: percentValue,
                             percentValueForWidth: percentValue,

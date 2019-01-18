@@ -22,21 +22,13 @@ module powerbi.extensibility.visual.visualUtils {
         const skipCategoryStartEnd: boolean = isSmallMultiple && settings.categoryAxis.rangeType !== AxisRangeType.Custom,
             skipValueStartEnd: boolean = isSmallMultiple && settings.valueAxis.rangeType !== AxisRangeType.Custom;
 
-        // Implement correct continuous logic instead of this!!!
-        barHeight = 5 < barHeight ? 5 : barHeight;
-
         dataPoints.forEach(point => {
             let height, width, x, y: number;
 
-            if (axes.yIsScalar && !isCategoricalAxisType) {
-                let start = skipCategoryStartEnd ? null : settings.categoryAxis.start,
-                    end = skipCategoryStartEnd ? null : settings.categoryAxis.end;
-
-                height = start != null && start > point.category || barHeight < 0 ? 0 : barHeight;
-
-                height = end != null && end <= point.category ? 0 : height;
-            } else {
+            if (!axes.yIsScalar || isCategoricalAxisType) {
                 height = axes.y.scale.rangeBand();
+            } else {
+                height = dataPoints.length > 2 ? barHeight : barHeight / 2;
             }
 
             let xValue = point.shiftValue < axes.x.dataDomain[0] ? axes.x.dataDomain[0] : point.shiftValue;
@@ -61,11 +53,7 @@ module powerbi.extensibility.visual.visualUtils {
                 width = axes.x.scale(end != null && valueToScale > end ? end : valueToScale) - axes.x.scale(xValue);
             }
 
-            if (axes.yIsScalar && !isCategoricalAxisType) {
-                y = axes.y.scale(point.category) - barHeight / 2;
-            } else {
-                y = axes.y.scale(point.category);
-            }
+            y = axes.y.scale(point.category);
 
             point.barCoordinates = {
                 height: height,
@@ -76,44 +64,53 @@ module powerbi.extensibility.visual.visualUtils {
         });
 
         if (axes.yIsScalar && settings.categoryAxis.axisType !== "categorical") {
-            this.recalculateHeightForContinuous(dataPoints, barHeight);
+            this.recalculateHeightForContinuous(dataPoints, skipCategoryStartEnd, settings.categoryAxis, barHeight);
         }
     }
 
-    export function recalculateHeightForContinuous(dataPoints: VisualDataPoint[], barHeight: number) {
+    export function recalculateHeightForContinuous(dataPoints: VisualDataPoint[], skipCategoryStartEnd: boolean, categorySettings: categoryAxisSettings, startHeight: number) {
         let minHeight: number = 1.5,
             minDistance: number = Number.MAX_VALUE;
+
+        let start = skipCategoryStartEnd ? null : categorySettings.start,
+            end = skipCategoryStartEnd ? null : categorySettings.end;
 
         let dataPointsSorted: VisualDataPoint[] = dataPoints.sort((a, b) => {
             return a.barCoordinates.y - b.barCoordinates.y;
         });
 
-        let firstDataPoint: VisualDataPoint = dataPointsSorted[0];
+        let sortedBarCoordinates: number[] = dataPointsSorted.map(d => d.barCoordinates.y).filter((v, i, a) => a.indexOf(v) === i);
 
-        for (let i = 1; i < dataPointsSorted.length; ++i) {
-            let distance: number = dataPointsSorted[i].barCoordinates.y - firstDataPoint.barCoordinates.y;
+        let firstCoodinate: number = sortedBarCoordinates[0];
+
+        for (let i = 1; i < sortedBarCoordinates.length; ++i) {
+            let distance: number = sortedBarCoordinates[i] - firstCoodinate;
 
             minDistance = distance < minDistance ? distance : minDistance;
-            firstDataPoint = dataPointsSorted[i];
+            firstCoodinate = sortedBarCoordinates[i];
         }
 
         if (minDistance < minHeight) {
-            
-        } else if (minHeight < minDistance && minDistance < barHeight) {
+
+        } else if (minHeight < minDistance) {
             minHeight = minDistance;
-        } else {
-            minHeight = barHeight;
         }
 
-        if (barHeight && barHeight !== minHeight) {
-            dataPointsSorted.forEach(x => {
-                const padding: number = minHeight / 100 * 20,
-                    height: number = x.barCoordinates.width ? minHeight - padding : 0;
+        dataPointsSorted.forEach(d => {
+            let height: number = 0;
+            if (startHeight > minHeight) {
+                let padding: number = minHeight / 100 * 20;
+                height = minHeight - padding;
+            } else {
+                height = d.barCoordinates.height;
+            }
 
-                x.barCoordinates.height = height
-                x.barCoordinates.y = x.barCoordinates.y + barHeight / 2 - height / 2;
-            });
-        }
+            height = start != null && start > d.category || height < 0 ? 0 : height;
+            height = end != null && end <= d.category ? 0 : height;
+
+            d.barCoordinates.height = height;            
+            d.barCoordinates.y = d.barCoordinates.y - d.barCoordinates.height / 2;
+        });
     }
 
     export function buildDataPointsByCategoriesArray(dataPoints: VisualDataPoint[]): CategoryDataPoints[] {
@@ -305,7 +302,7 @@ module powerbi.extensibility.visual.visualUtils {
                                                 &&  end != null ? x.value <= end : true)
             }
 
-            let dataPointsCount: number = dataPoints.length;
+            let dataPointsCount: number = dataPoints.map(x => x.category).filter((v, i, a) => a.indexOf(v) === i).length;
 
             if (dataPointsCount < 4) {
                 let devider: number = 3.75;

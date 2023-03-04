@@ -24,64 +24,62 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual {
-    // powerbi.extensibility.utils.interactivity
-    import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
-    import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
-    import interactivityUtils = powerbi.extensibility.utils.interactivity.interactivityUtils;
-    import LegendDataPoint = powerbi.extensibility.utils.chart.legend.LegendDataPoint;
+// powerbi.extensibility.utils.chartutils
+import { legendInterfaces, legendBehavior } from "powerbi-visuals-utils-chartutils";
+import LegendDataPoint = legendInterfaces.LegendDataPoint;
+import LegendBehaviorOptions = legendBehavior.LegendBehaviorOptions;
 
-    export interface LegendBehaviorOptions {
-        legendItems: d3.Selection<any>;
-        legendIcons: d3.Selection<any>;
-        clearCatcher: d3.Selection<any>;
+// powerbi.extensibility.utils.interactivity
+import { interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
+import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import ISelectionHandler = interactivityBaseService.ISelectionHandler;
+
+import { d3Selection } from "./utils";
+
+export class CustomLegendBehavior implements IInteractiveBehavior {
+    public static dimmedLegendColor = "#A6A6A6";
+    protected legendIcons: d3Selection<any>;
+    private saveSelection: () => void;
+
+    constructor(saveSelection: () => void){
+        this.saveSelection = saveSelection;
     }
 
-    export class CustomLegendBehavior implements IInteractiveBehavior {
-        public static dimmedLegendColor = "#A6A6A6";
-        protected legendIcons;
-        private saveSelection: () => void;
+    public bindEvents(options: LegendBehaviorOptions, selectionHandler: ISelectionHandler): void {
+        let legendItems = options.legendItems;
+        this.legendIcons = options.legendIcons;
+        let clearCatcher = options.clearCatcher;
 
-        constructor(saveSelection: () => void){
-            this.saveSelection = saveSelection;
-        }
+        legendItems.on("click", (event: MouseEvent, d) => {
+            selectionHandler.handleSelection(d, event.ctrlKey);
+            this.saveSelection();
+        });
 
-        public bindEvents(options: LegendBehaviorOptions, selectionHandler: ISelectionHandler): void {
-            let legendItems = options.legendItems;
-            this.legendIcons = options.legendIcons;
-            let clearCatcher = options.clearCatcher;
+        clearCatcher.on("click", () => {
+            selectionHandler.handleClearSelection();
+            this.saveSelection();
+        });
+    }
 
-            legendItems.on("click", d => {
-                selectionHandler.handleSelection(d, (d3.event as MouseEvent).ctrlKey);
-                this.saveSelection();
-            });
-
-            clearCatcher.on("click", () => {
-                selectionHandler.handleClearSelection();
-                this.saveSelection();
-            });
-        }
-
-        public renderSelection(hasSelection: boolean): void {
-            if (hasSelection) {
-                this.legendIcons.style({
-                    "fill": (d: LegendDataPoint) => {
-                        if (!d.selected) {
-                            return CustomLegendBehavior.dimmedLegendColor;
-                        }
-                        else {
-                            return d.color;
-                        }
+    public renderSelection(hasSelection: boolean): void {
+        if (hasSelection) {
+            this.legendIcons.style(
+                "fill", (d: LegendDataPoint) => {
+                    if (!d.selected) {
+                        return CustomLegendBehavior.dimmedLegendColor;
                     }
-                });
-            }
-            else {
-                this.legendIcons.style({
-                    "fill": (d: LegendDataPoint) => {
+                    else {
                         return d.color;
                     }
-                });
-            }
+                }
+            );
+        }
+        else {
+            this.legendIcons.style(
+                "fill", (d: LegendDataPoint) => {
+                    return d.color;
+                }
+            );
         }
     }
 }

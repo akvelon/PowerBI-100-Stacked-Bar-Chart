@@ -95,7 +95,7 @@ export class RenderVisual {
 
         // Set the size and position of existing rectangles.
         barSelect
-            .attr({
+            .attrs({
                 height: d => {
                     return d.barCoordinates.height;
                 },
@@ -114,7 +114,7 @@ export class RenderVisual {
         let interactivityService = visualInteractivityService,
             hasSelection: boolean = interactivityService.hasSelection();
 
-            barSelect.style({
+            barSelect.styles({
                 "fill-opacity": (p: VisualDataPoint) => visualUtils.getFillOpacity(
                     p.selected,
                     p.highlight,
@@ -185,7 +185,7 @@ export class RenderVisual {
             .append("svg:rect");
 
         backgroundSelection
-            .attr({
+            .attrs({
                 height: d => {
                     return d.labelCoordinates.height + DataLabelHelper.labelBackgroundHeightPadding;
                 },
@@ -203,7 +203,7 @@ export class RenderVisual {
                 fill: settings.categoryLabels.backgroundColor
             });
 
-        backgroundSelection.style({
+        backgroundSelection.styles({
             "fill-opacity": (100 - settings.categoryLabels.transparency) / 100,
             "pointer-events": "none"
         });
@@ -259,7 +259,7 @@ export class RenderVisual {
             });
 
         labelSelection
-            .style({
+            .styles({
                 "fill": labelSettings.color,
                 "font-size": fontSizeInPx,
                 "font-family": fontFamily,
@@ -333,12 +333,12 @@ export class RenderVisual {
                 y = topSpace * i * rowsInFlow + i * chartSize.height * rowsInFlow + this.gapBetweenCharts * (i * rowsInFlow - 1);
             }
 
-            let line = chartElement.append("line").style({
+            let line = chartElement.append("line").styles({
                 "stroke": "#aaa",
                 "stroke-width": 1
             });
 
-            line.attr({
+            line.attrs({
                 x1: 0,//leftSpace + gapBetweenCharts / 2,
                 x2: leftSpace + uniqueColumns.length * chartSize.width + this.gapBetweenCharts * uniqueColumns.length,
                 y1: y,
@@ -350,12 +350,12 @@ export class RenderVisual {
             for (let j = 1; j < uniqueColumns.length; ++j) { 
                 let x = leftSpace + j * chartSize.width + this.gapBetweenCharts * j;
 
-                let line = chartElement.append("line").style({
+                let line = chartElement.append("line").styles({
                     "stroke": "#aaa",
                     "stroke-width": 1
                 });
 
-                line.attr({
+                line.attrs({
                     x1: x,
                     x2: x,
                     y1: 0,
@@ -393,13 +393,13 @@ export class RenderVisual {
         }
 
         topTitlestext
-            .style({ 
+            .styles({ 
                 "text-anchor": "middle",
                 "font-size": fontSizeInPx,
                 "font-family": fontFamily,
                 "fill": settings.fontColor
             })
-            .attr({
+            .attrs({
                 dy: "0.3em"
             })
             .text(d => {
@@ -414,7 +414,7 @@ export class RenderVisual {
                 const textSelectionX: d3Selection<any> = select(text[0][0]);
                 let x = leftSpace + chartSize.width / 2;
 
-                textSelectionX.attr({
+                textSelectionX.attrs({
                     "transform": svg.translate(x, topSpace + textHeight / 2)
                 });                    
             });
@@ -449,13 +449,13 @@ export class RenderVisual {
             }
 
             topTitlestext
-                .style({ 
+                .styles({ 
                     "text-anchor": "middle",
                     "font-size": fontSizeInPx,
                     "font-family": fontFamily,
                     "fill": settings.fontColor
                 })
-                .attr({
+                .attrs({
                     dy: "1em"
                 })
                 .text(d => {
@@ -471,7 +471,7 @@ export class RenderVisual {
                         const textSelectionX: d3Selection<any> = select(text[0][j]);
                         let x = leftSpace + j * chartSize.width + chartSize.width / 2 + this.gapBetweenCharts * j;
 
-                        textSelectionX.attr({
+                        textSelectionX.attrs({
                             "transform": svg.translate(x, topSpace / 2)
                         });
                     }
@@ -497,7 +497,7 @@ export class RenderVisual {
             .remove();
 
         leftTitlesText
-            .style({ 
+            .styles({ 
                 "text-anchor": "middle",
                 "font-size": fontSizeInPx,
                 "font-family": fontFamily,
@@ -524,7 +524,7 @@ export class RenderVisual {
                         y = i * chartSize.height + chartSize.height / 2 + topSpace * 2 + this.gapBetweenCharts * i;
                     }                        
 
-                    textSelectionX.attr({
+                    textSelectionX.attrs({
                         "transform": svg.translate(leftSpace / 2, y)
                     });
                 }
@@ -557,25 +557,25 @@ export class RenderVisual {
 
         line
             .classed("const-line", true)                    
-            .style({
+            .styles({
                 display: settings.show ? "unset" : "none",
                 stroke: settings.lineColor,
                 "stroke-opacity": 1 - settings.transparency / 100,
                 "stroke-width": "3px"
             })
-            .attr({
+            .attrs({
                 "x2": x,
                 "y2": height,
                 "x1": x
             });
 
         if (settings.lineStyle === LineStyle.Dotted) {
-            line.style({
+            line.styles({
                 "stroke-dasharray": "1, 5",
                 "stroke-linecap": "round"
             });
         } else if (settings.lineStyle === LineStyle.Dashed) {
-            line.style({
+            line.styles({
                 "stroke-dasharray": "5, 5"
             });
         }
@@ -601,13 +601,13 @@ export class RenderVisual {
                         .classed("const-label", true);
 
             label
-                .attr({
+                .attrs({
                     transform: this.getTranslateForStaticLineLabel(x, y, textWidth, textHeight, settings, axes, height)
                 });
 
             label
                 .text(text)
-                .style({
+                .styles({
                     "font-family": "wf_standard-font, helvetica, arial, sans-serif",
                     "font-size": "10px",
                     fill: settings.fontColor

@@ -300,11 +300,11 @@ export class LassoSelection {
                     this.selectionStates[i + scrollIndex] === 'selected'
                     || this.selectionStates[i + scrollIndex] === 'justSelected'
                 ) {
-                    d3_bar.style({
+                    d3_bar.styles({
                         'fill-opacity': DefaultOpacity
                     });
                 } else {
-                    d3_bar.style({
+                    d3_bar.styles({
                         'fill-opacity': DimmedOpacity
                     });
                 }
@@ -327,14 +327,14 @@ export class LassoSelection {
     }
 
     private setRectPos(x: number, y: number): void {
-        this.selection.rect.style({
+        this.selection.rect.styles({
             left: x.toString() + 'px',
             top: y.toString() + 'px'
         });
     }
 
     private setRectSize(width: number, height: number): void {
-        this.selection.rect.style({
+        this.selection.rect.styles({
             width: width.toString() + 'px',
             height: height.toString() + 'px'
         });

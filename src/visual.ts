@@ -244,7 +244,7 @@ export class Visual implements IVisual {
         } else {
             this.mainSvgElement = this.mainElement.append('svg')
             .classed(Selectors.MainSvg.className, true)
-            .attr({
+            .attrs({
                 width: "100%",
                 height: "100%"
             });
@@ -484,7 +484,7 @@ export class Visual implements IVisual {
             legendSize = this.calculateLegendSize(this.settings.legend, this.legendElementRoot);
         } else {
             this.legendElement && this.legendElement.selectAll("*").remove();
-            this.mainDivElement && this.mainDivElement.style({
+            this.mainDivElement && this.mainDivElement.styles({
                 "margin-top": 0,
                 "margin-bottom": 0,
                 "margin-left": 0,
@@ -510,7 +510,7 @@ export class Visual implements IVisual {
             width: chartSize.width - yAxisSize - gapBetweenCharts * 2
         }
 
-        this.mainDivElement.style({
+        this.mainDivElement.styles({
             width: viewport.width - legendSize.width + "px",
             height: viewport.height - legendSize.height + "px",
             "overflow-x": chartSize.isHorizontalSliderNeeded ? "auto" : "hidden",
@@ -578,7 +578,7 @@ export class Visual implements IVisual {
         let svgChart = this.mainDivElement
                 .append("svg")
                 .classed("chart", true)
-                .style({
+                .styles({
                     width: svgWidth + "px",
                     height: svgHeight + "px"
                 });
@@ -604,7 +604,7 @@ export class Visual implements IVisual {
 
                 let chart = svgChart
                     .append("g")
-                    .attr({
+                    .attrs({
                         transform: svg.translate(leftSpace + leftMove, topMove + topSpace)
                     });
 
@@ -613,14 +613,14 @@ export class Visual implements IVisual {
 
                 let yHasRightPosition: boolean = this.settings.categoryAxis.show && this.settings.categoryAxis.position === "right";
 
-                xAxisSvgGroup.attr(
+                xAxisSvgGroup.attrs(
                     "transform",
                     svg.translate(
                         marginLeft + 
                         (yHasRightPosition ? 0 : yAxisSize),
                         barsSectionSize.height));
     
-                yAxisSvgGroup.attr(
+                yAxisSvgGroup.attrs(
                     "transform",
                     svg.translate(
                         marginLeft +
@@ -707,7 +707,7 @@ export class Visual implements IVisual {
                 let barGroup = chart
                     .append("g")
                     .classed("bar-group", true)
-                    .attr({
+                    .attrss({
                         transform: svg.translate(marginLeft + (yHasRightPosition ? 0 : yAxisSize), 0)
                     });
 
@@ -733,7 +733,7 @@ export class Visual implements IVisual {
                 barSelect = barSelect.merge(barSelectEnter);
                 
                 barSelect
-                    .attr({
+                    .attrs({
                         height: d => {
                             return d.barCoordinates.height;
                         },
@@ -753,7 +753,7 @@ export class Visual implements IVisual {
                 hasSelection: boolean = interactivityService.hasSelection();
                 interactivityService.applySelectionStateToData(dataPoints);
     
-                barSelect.style({
+                barSelect.styles({
                     "fill-opacity": (p: VisualDataPoint) => visualUtils.getFillOpacity(
                         p.selected,
                         p.highlight,
@@ -900,7 +900,7 @@ export class Visual implements IVisual {
             legendUtils.renderLegend(this.legend, this.mainSvgElement, options.viewport, this.legendProperties);
         } else {
             this.legendElement && this.legendElement.selectAll("*").remove();
-            this.mainSvgElement && this.mainSvgElement.style({
+            this.mainSvgElement && this.mainSvgElement.styles({
                 "margin-top": 0,
                 "margin-bottom": 0,
                 "margin-left": 0,

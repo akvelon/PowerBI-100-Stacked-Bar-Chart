@@ -338,7 +338,7 @@ export function calculateBarHeight(
     return barHeight;
 }
 
-export function getLabelsMaxWidth(group: d3.selection.Group): number {
+export function getLabelsMaxWidth(group: d3Selection): number {
     const widths: Array<number> = [];
 
     group.forEach((item: any) => {

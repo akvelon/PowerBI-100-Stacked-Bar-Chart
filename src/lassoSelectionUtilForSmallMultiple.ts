@@ -441,14 +441,14 @@ class LassoElement {
     }
 
     setPos(x: number, y: number): void {
-        this.d3_element.style({
+        this.d3_element.styles({
             left: x.toString() + 'px',
             top: y.toString() + 'px'
         });
     }
 
     setSize(width: number, height: number): void {
-        this.d3_element.style({
+        this.d3_element.styles({
             width: width.toString() + 'px',
             height: height.toString() + 'px'
         });

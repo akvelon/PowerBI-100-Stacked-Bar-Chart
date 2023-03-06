@@ -212,13 +212,13 @@ export class RenderAxes {
 
             let strokeDasharray = visualUtils.getLineStyleParam(lineStyle);
 
-            axisText.style({
+            axisText.styles({
                 "fill": color,
                 "font-size": fontSize,
                 "font-family": fontFamily
             });
 
-            axisLines.style({
+            axisLines.styles({
                 "stroke": gridlinesColor,
                 "stroke-width": strokeWidth,
                 "stroke-dasharray": strokeDasharray
@@ -242,7 +242,7 @@ export class RenderAxes {
             let fontSize: string = PixelConverter.toString(settings.categoryAxis.fontSize);
             let fontFamily: string = settings.categoryAxis.fontFamily;
 
-            axisText.style({
+            axisText.styles({
                 "fill": color,
                 "stroke": "none",
                 "font-size": fontSize,
@@ -309,12 +309,12 @@ export class RenderAxes {
         let yAxisFontFamily: string = settings.categoryAxis.titleFontFamily;
 
         axisLabelsGroup
-            .style({ "text-anchor": "middle" })
+            .styles({ "text-anchor": "middle" })
             .text(d => d)
             .call((text: d3Selection<any>) => {
                 const textSelectionX: d3Selection<any> = select(text[0][0]);
 
-                textSelectionX.attr({
+                textSelectionX.attrs({
                     "transform": svg.translate(
                         (width) / RenderAxes.AxisLabelOffset,
                         (height + visualSize.height + xFontSize + margin.top) / 2),
@@ -331,7 +331,7 @@ export class RenderAxes {
                     textSelectionX.text(newTitle);
                 }
 
-                textSelectionX.style({
+                textSelectionX.styles({
                     "fill": xColor,
                     "font-size": xFontSizeString,
                     "font-family": xAxisFontFamily
@@ -339,7 +339,7 @@ export class RenderAxes {
 
                 const textSelectionY: d3Selection<any> = select(text[0][1]);
 
-                textSelectionY.attr({
+                textSelectionY.attrs({
                     "transform": showY1OnRight ? RenderAxes.YAxisLabelTransformRotate : RenderAxes.YAxisLabelTransformRotate,
                     "y": showY1OnRight
                         ? width - margin.right - yFontSize
@@ -358,7 +358,7 @@ export class RenderAxes {
                     textSelectionY.text(newTitle);
                 }
 
-                textSelectionY.style({
+                textSelectionY.styles({
                     "fill": yColor,
                     "font-size": yFontSizeString,
                     "font-family": yAxisFontFamily

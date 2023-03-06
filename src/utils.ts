@@ -1,11 +1,10 @@
 
-import * as d3 from "d3";
-import "d3-selection-multi";
+import { Selection } from 'd3-selection';
 import { AxisRangeType, categoryAxisSettings, categoryLabelsSettings, valueAxisSettings, VisualSettings } from "./settings";
 import { CategoryDataPoints, IAxes, ISize, VisualData, VisualDataPoint, VisualMeasureMetadata } from "./visualInterfaces";
-export type d3Selection<T> = d3.Selection<any, T, any, any>;
-export type d3Update<T> = d3.Update<any, T, any, any>;
-export type d3Group<T> = d3.Group<any, T, any, any>;
+export type d3Selection<T> = Selection<any, T, any, any>;
+export type d3Update<T> = Selection<any, T, any, any>;
+export type d3Group<T> = Selection<any, T, any, any>;
 
 import powerbiApi from "powerbi-visuals-api";
 import DataViewMetadataColumn = powerbiApi.DataViewMetadataColumn;
@@ -30,6 +29,7 @@ const DisplayUnitValue: number = 1;
 
 import { Field } from "./dataViewConverter";
 import { IAxisProperties } from "powerbi-visuals-utils-chartutils/lib/axis/axisInterfaces";
+import { max, min } from 'd3-array';
 
 export function calculateBarCoordianatesByData(data: VisualData, settings: VisualSettings, barHeight: number, isSmallMultiple: boolean = false): void {
     let dataPoints: VisualDataPoint[] = data.dataPoints;
@@ -310,7 +310,7 @@ export function calculateBarHeight(
 
     if (settings.categoryAxis.axisType === "categorical") {
         let innerPadding: number = categoryInnerPadding / 100;
-        barHeight = d3.min([CategoryMaxHeight, d3.max([CategoryMinHeight, currentBarHeight])]) * (1 - innerPadding);
+        barHeight = min([CategoryMaxHeight, max([CategoryMinHeight, currentBarHeight])]) * (1 - innerPadding);
     } else {
         let dataPoints = [...visualDataPoints];
 
@@ -338,34 +338,34 @@ export function calculateBarHeight(
     return barHeight;
 }
 
-export function getLabelsMaxWidth(group: d3Selection): number {
+export function getLabelsMaxWidth(group: d3Selection<any>): number {
     const widths: Array<number> = [];
 
-    group.forEach((item: any) => {
+    group.each((item: any) => {
         let dimension: ClientRect = item.getBoundingClientRect();
-        widths.push(d3.max([dimension.width, dimension.height]));
+        widths.push(max([dimension.width, dimension.height]));
     });
 
-    if (group.length === 0) {
+    if (group.size() === 0) {
         widths.push(0);
     }
 
-    return d3.max(widths);
+    return max(widths);
 }
 
-export function getLabelsMaxHeight(group: d3.selection.Group): number {
+export function getLabelsMaxHeight(group: d3Group<any>): number {
     const heights: Array<number> = [];
 
-    group.forEach((item: any) => {
+    group.each((item: any) => {
         let dimension: ClientRect = item.getBoundingClientRect();
         heights.push(dimension.height);
     });
 
-    if (group.length === 0) {
+    if (group.size() === 0) {
         heights.push(0);
     }
 
-    return d3.max(heights);
+    return max(heights);
 }
 
 export function GetYAxisTitleThickness(valueSettings: valueAxisSettings): number {

@@ -70,7 +70,7 @@ import { WebBehavior, WebBehaviorOptions } from "./behavior"
 
 import { CssConstants, IMargin, manipulation as svg } from "powerbi-visuals-utils-svgutils";
 
-import { select } from "d3";
+import * as d3 from 'd3-selection';
 import { d3Selection as d3Selection, d3Update as d3Update, d3Group as d3Group } from "./utils";
 
 "use strict";
@@ -96,7 +96,7 @@ import { AxisRangeType, LayoutMode, legendSettings, smallMultipleSettings, Visua
 import { AxesDomains, CategoryDataPoints, IAxes, IAxesSize, ISize, LegendProperties, LegendSize, SmallMultipleSizeOptions, VisualData, VisualDataPoint, VisualMeasureMetadata, VisualTranslation } from "./visualInterfaces";
 
 import { CustomLegendBehavior } from "./customLegendBehavior";
-import { ILegend } from "powerbi-visuals-utils-chartutils/lib/legend/legendInterfaces";
+import { ILegend, LegendDataPoint } from "powerbi-visuals-utils-chartutils/lib/legend/legendInterfaces";
 import { createLegend } from "powerbi-visuals-utils-chartutils/lib/legend/legend";
 import { DataViewConverter, Field } from "./dataViewConverter";
 import { EnumerateObject } from "./enumerateObject";
@@ -191,7 +191,7 @@ export class Visual implements IVisual {
 
     constructor(options: VisualConstructorOptions) {
         // Create d3 selection from main HTML element
-        this.mainElement = select(options.element);
+        this.mainElement = d3.select(options.element);
 
         this.mainHtmlElement = options.element;        
 
@@ -220,7 +220,7 @@ export class Visual implements IVisual {
     }
 
     saveSelection(): void {
-        const selected = this.mainElement.selectAll(`.legendItem, ${Selectors.BarSelect.selectorName}`)
+        const selected = this.mainElement.selectAll<any, LegendDataPoint>(`.legendItem, ${Selectors.BarSelect.selectorName}`)
             .filter(d => d.selected)
             .each(d => {
                 // saving prototype value if no own value (needed for legend)
@@ -244,10 +244,11 @@ export class Visual implements IVisual {
         } else {
             this.mainSvgElement = this.mainElement.append('svg')
             .classed(Selectors.MainSvg.className, true)
-            .attrs({
-                width: "100%",
-                height: "100%"
-            });
+            .attr(
+                "width", "100%",
+            ).attr(
+                "height", "100%"
+            );
         }
     }
 
@@ -484,12 +485,17 @@ export class Visual implements IVisual {
             legendSize = this.calculateLegendSize(this.settings.legend, this.legendElementRoot);
         } else {
             this.legendElement && this.legendElement.selectAll("*").remove();
-            this.mainDivElement && this.mainDivElement.styles({
-                "margin-top": 0,
-                "margin-bottom": 0,
-                "margin-left": 0,
-                "margin-right": 0
-            });
+            this.mainDivElement && this.mainDivElement.style(
+                "margin-top", 0,
+            ).style(
+                "margin-bottom", 0,
+            )
+            .style(
+                "margin-left", 0,
+            )
+            .style(
+                "margin-right", 0
+            );
             legendSize = {
                 height: 0,
                 width: 0
@@ -510,12 +516,19 @@ export class Visual implements IVisual {
             width: chartSize.width - yAxisSize - gapBetweenCharts * 2
         }
 
-        this.mainDivElement.styles({
-            width: viewport.width - legendSize.width + "px",
-            height: viewport.height - legendSize.height + "px",
-            "overflow-x": chartSize.isHorizontalSliderNeeded ? "auto" : "hidden",
-            "overflow-y": chartSize.isVerticalSliderNeeded ? "auto" : "hidden"
-        });
+        this.mainDivElement
+        .style(
+            "width", viewport.width - legendSize.width + "px",
+        )
+        .style(
+            "height", viewport.height - legendSize.height + "px",
+        )
+        .style(
+            "overflow-x", chartSize.isHorizontalSliderNeeded ? "auto" : "hidden",
+        )
+        .style(
+            "overflow-y", chartSize.isVerticalSliderNeeded ? "auto" : "hidden"
+        );
         
         let maxLabelWidth: number = (chartSize.width) / 100 * this.settings.categoryAxis.maximumSize; 
         if (this.settings.categoryAxis.maximumSize) {
@@ -578,10 +591,12 @@ export class Visual implements IVisual {
         let svgChart = this.mainDivElement
                 .append("svg")
                 .classed("chart", true)
-                .styles({
-                    width: svgWidth + "px",
-                    height: svgHeight + "px"
-                });
+                .style(
+                    "width", svgWidth + "px",
+                )
+                .style(
+                    "height", svgHeight + "px"
+                );
 
         for (let i = 0; i < uniqueRows.length; ++i) {
             for (let j = 0; j < uniqueColumns.length; ++j) {
@@ -604,23 +619,23 @@ export class Visual implements IVisual {
 
                 let chart = svgChart
                     .append("g")
-                    .attrs({
-                        transform: svg.translate(leftSpace + leftMove, topMove + topSpace)
-                    });
+                    .attr(
+                        "transform", svg.translate(leftSpace + leftMove, topMove + topSpace)
+                    );
 
                 let xAxisSvgGroup: d3Selection<SVGElement> = chart.append("g");
                 let yAxisSvgGroup: d3Selection<SVGElement> = chart.append("g");
 
                 let yHasRightPosition: boolean = this.settings.categoryAxis.show && this.settings.categoryAxis.position === "right";
 
-                xAxisSvgGroup.attrs(
+                xAxisSvgGroup.attr(
                     "transform",
                     svg.translate(
                         marginLeft + 
                         (yHasRightPosition ? 0 : yAxisSize),
                         barsSectionSize.height));
     
-                yAxisSvgGroup.attrs(
+                yAxisSvgGroup.attr(
                     "transform",
                     svg.translate(
                         marginLeft +
@@ -675,7 +690,7 @@ export class Visual implements IVisual {
 
                     for (let i = 0; i < xText.length; ++i) { 
                         if (i % divider > 0) {
-                            select(xText[i]).remove();
+                            d3.select(xText[i]).remove();
                         }
                     }
                 }
@@ -699,7 +714,7 @@ export class Visual implements IVisual {
 
                     for (let i = 0; i < yText.length; ++i) { 
                         if (i % divider > 0) {
-                            select(yText[i]).remove();
+                            d3.select(yText[i]).remove();
                         }
                     }
                 }
@@ -707,9 +722,9 @@ export class Visual implements IVisual {
                 let barGroup = chart
                     .append("g")
                     .classed("bar-group", true)
-                    .attrss({
-                        transform: svg.translate(marginLeft + (yHasRightPosition ? 0 : yAxisSize), 0)
-                    });
+                    .attr(
+                        "transform", svg.translate(marginLeft + (yHasRightPosition ? 0 : yAxisSize), 0)
+                    );
 
                     // .bar
                     /** (dataPoints[0] = H= 15) =>
@@ -733,33 +748,43 @@ export class Visual implements IVisual {
                 barSelect = barSelect.merge(barSelectEnter);
                 
                 barSelect
-                    .attrs({
-                        height: d => {
+                    .attr(
+                        "height", d => {
                             return d.barCoordinates.height;
                         },
-                        width: d => {
+                    )
+                    .attr(
+                        "width", d => {
                             return d.barCoordinates.width;
                         },
-                        x: d => {
+                    )
+                    .attr(
+                        "x", d => {
                             return d.barCoordinates.x;
                         },
-                        y: d => {
+                    )
+                    .attr(
+                        "y", d => {
                             return d.barCoordinates.y;
                         },
-                        fill: d => d.color
-                    });
+                    )
+                    .attr(
+                        "fill", d => d.color
+                    );
 
                 let interactivityService = this.interactivityService,
                 hasSelection: boolean = interactivityService.hasSelection();
                 interactivityService.applySelectionStateToData(dataPoints);
     
-                barSelect.styles({
-                    "fill-opacity": (p: VisualDataPoint) => visualUtils.getFillOpacity(
+                barSelect.style(
+                    "fill-opacity", (p: VisualDataPoint) => visualUtils.getFillOpacity(
                         p.selected,
                         p.highlight,
                         !p.highlight && hasSelection,
                         !p.selected && hasHighlight),
-                    "stroke": (p: VisualDataPoint)  => {
+                )
+                .style(
+                    "stroke", (p: VisualDataPoint)  => {
                         if (hasSelection && visualUtils.isSelected(p.selected,
                             p.highlight,
                             !p.highlight && hasSelection,
@@ -768,8 +793,10 @@ export class Visual implements IVisual {
                             }                        
     
                         return p.color;
-                    },
-                    "stroke-width": p => {
+                    }
+                )
+                .style(
+                    "stroke-width", p => {
                         if (hasSelection && visualUtils.isSelected(p.selected,
                             p.highlight,
                             !p.highlight && hasSelection,
@@ -779,7 +806,7 @@ export class Visual implements IVisual {
     
                         return Visual.DefaultStrokeWidth;
                     }
-                });
+                );
 
                 RenderVisual.renderTooltip(barSelect, this.tooltipServiceWrapper);
 
@@ -872,7 +899,7 @@ export class Visual implements IVisual {
 
             let behaviorOptions: WebBehaviorOptions = {
                 bars: this.mainElement.selectAll(Selectors.BarSelect.selectorName),
-                clearCatcher: select(document.createElement('div')),
+                clearCatcher: d3.select(document.createElement('div')),
                 interactivityService: this.interactivityService,
                 host: this.host,
                 selectionSaveSettings: this.settings.selectionSaveSettings,
@@ -900,12 +927,18 @@ export class Visual implements IVisual {
             legendUtils.renderLegend(this.legend, this.mainSvgElement, options.viewport, this.legendProperties);
         } else {
             this.legendElement && this.legendElement.selectAll("*").remove();
-            this.mainSvgElement && this.mainSvgElement.styles({
-                "margin-top": 0,
-                "margin-bottom": 0,
-                "margin-left": 0,
-                "margin-right": 0
-            });
+            this.mainSvgElement && this.mainSvgElement.style(
+                "margin-bottom", 0,
+            )
+            .style(
+                "margin-bottom", 0,
+            )
+            .style(
+                "margin-left", 0,
+            )
+            .style(
+                "margin-right", 0
+            );
         }
 
         this.calculateOffsets(this.xAxisSvgGroup, this.yAxisSvgGroup);
@@ -969,6 +1002,7 @@ export class Visual implements IVisual {
         if (!this.optionsAreValid(options)) {
             return;
         }
+        debugger;
 
         const dataView = options && options.dataViews && options.dataViews[0];
 
@@ -1037,8 +1071,8 @@ export class Visual implements IVisual {
     private restoreSelection(): void {
         const savedSelection = this.settings.selectionSaveSettings.selection;
 
-        const selected: any[] = this.mainElement.selectAll(`.legendItem, ${Selectors.BarSelect.selectorName}`).data().filter(d => {
-            return savedSelection.some(savedD => savedD.identity.key === d.identity.key);
+        const selected: any[] = this.mainElement.selectAll<any, VisualDataPoint>(`.legendItem, ${Selectors.BarSelect.selectorName}`).data().filter(d => {
+            return savedSelection.some(savedD => savedD.identity.key === (<any>d.identity).key);
         });
 
         if (selected.length > 0){

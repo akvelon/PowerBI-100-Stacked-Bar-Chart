@@ -3,7 +3,6 @@ import { IMargin } from "powerbi-visuals-utils-svgutils";
 import { d3Selection as d3Selection } from "./utils";
 
 import { select } from "d3-selection";
-import "d3-selection-multi";
 
 import powerbiApi from "powerbi-visuals-api";
 import VisualUpdateType = powerbiApi.VisualUpdateType;
@@ -266,12 +265,18 @@ export class ScrollBar {
             }
         }
 
-        track.el.styles({
-            top: this.track.top + 'px',
-            left: this.track.left + 'px',
-            height: this.track.height + 'px',
-            width: this.track.width + 'px'
-        });
+        track.el.style(
+            "top", this.track.top + 'px',
+        )
+        .style(
+            "left", this.track.left + 'px',
+        )
+        .style(
+            "height", this.track.height + 'px',
+        )
+        .style(
+            "width", this.track.width + 'px'
+        );
 
         let visibleCategoriesCount: number = this.visibleDataPointsByCategories.length;
         let allCategoriesCount: number = this.visual.getDataPointsByCategories().length;

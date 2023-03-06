@@ -7,8 +7,7 @@ import powerbiApi from "powerbi-visuals-api";
 import IVisualHost = powerbiApi.extensibility.visual.IVisualHost;
 import PrimitiveValue = powerbiApi.PrimitiveValue;
 
-import { select } from "d3-selection";
-
+import * as d3 from 'd3-selection';
 
 import * as visualUtils from "./../utils";
 
@@ -95,32 +94,43 @@ export class RenderVisual {
 
         // Set the size and position of existing rectangles.
         barSelect
-            .attrs({
-                height: d => {
+            .attr(
+                "height", d => {
                     return d.barCoordinates.height;
                 },
-                width: d => {
+            )
+            .attr(
+                "width", d => {
                     return d.barCoordinates.width;
                 },
-                x: d => {
+            )
+            .attr(
+                "x", d => {
                     return d.barCoordinates.x;
                 },
-                y: d => {
+            )
+            .attr(
+                "y", d => {
                     return d.barCoordinates.y;
                 },
-                fill: d => d.color
-            });
+            )
+            .attr(
+                "fill", d => d.color
+            );
 
         let interactivityService = visualInteractivityService,
             hasSelection: boolean = interactivityService.hasSelection();
 
-            barSelect.styles({
-                "fill-opacity": (p: VisualDataPoint) => visualUtils.getFillOpacity(
+            barSelect
+            .style(
+                "fill-opacity", (p: VisualDataPoint) => visualUtils.getFillOpacity(
                     p.selected,
                     p.highlight,
                     !p.highlight && hasSelection,
                     !p.selected && data.hasHighlight),
-                "stroke": (p: VisualDataPoint)  => {
+            )
+            .style(
+                "stroke", (p: VisualDataPoint)  => {
                     if ((hasHighlight || hasSelection) && visualUtils.isSelected(p.selected,
                         p.highlight,
                         !p.highlight && hasSelection,
@@ -130,7 +140,9 @@ export class RenderVisual {
 
                     return p.color;
                 },
-                "stroke-width": p => {
+            )
+            .style(
+                "stroke-width", p => {
                     if ((hasHighlight || hasSelection) && visualUtils.isSelected(p.selected,
                         p.highlight,
                         !p.highlight && hasSelection,
@@ -140,7 +152,7 @@ export class RenderVisual {
 
                     return Visual.DefaultStrokeWidth;
                 }
-            });
+            );
 
         if (interactivityService) {
             interactivityService.applySelectionStateToData(data.dataPoints);
@@ -185,28 +197,43 @@ export class RenderVisual {
             .append("svg:rect");
 
         backgroundSelection
-            .attrs({
-                height: d => {
+            .attr(
+                "height", d => {
                     return d.labelCoordinates.height + DataLabelHelper.labelBackgroundHeightPadding;
                 },
-                width: d => {
+            )
+            .attr(
+                "width", d => {
                     return d.labelCoordinates.width + DataLabelHelper.labelBackgroundWidthPadding;
                 },
-                x: d => {
+            )
+            .attr(
+                "x", d => {
                     return d.labelCoordinates.x - DataLabelHelper.labelBackgroundXShift;
                 },
-                y: d => {
+            )
+            .attr(
+                "y", d => {
                     return d.labelCoordinates.y - d.labelCoordinates.height - DataLabelHelper.labelBackgroundYShift;
                 },
-                rx: 4,
-                ry: 4,
-                fill: settings.categoryLabels.backgroundColor
-            });
+            )
+            .attr(
+                "rx", 4,
+            )
+            .attr(
+                "ry", 4,
+            )
+            .attr(
+                "fill", settings.categoryLabels.backgroundColor
+            );
 
-        backgroundSelection.styles({
-            "fill-opacity": (100 - settings.categoryLabels.transparency) / 100,
-            "pointer-events": "none"
-        });
+        backgroundSelection
+        .style(
+            "fill-opacity", (100 - settings.categoryLabels.transparency) / 100,
+        )
+        .style(
+            "pointer-events", "none"
+        );
 
         backgroundSelection
             .exit()
@@ -259,12 +286,18 @@ export class RenderVisual {
             });
 
         labelSelection
-            .styles({
-                "fill": labelSettings.color,
-                "font-size": fontSizeInPx,
-                "font-family": fontFamily,
-                "pointer-events": "none"
-            })
+            .style(
+                "fill", labelSettings.color,
+            )
+            .style(
+                "font-size", fontSizeInPx,
+            )
+            .style(
+                "font-family", fontFamily,
+            )
+            .style(
+                "pointer-events", "none"
+            )
             .text((p: VisualDataPoint) => dataLabelFormatter.format(p.percentValue));
 
         labelSelection
@@ -333,34 +366,53 @@ export class RenderVisual {
                 y = topSpace * i * rowsInFlow + i * chartSize.height * rowsInFlow + this.gapBetweenCharts * (i * rowsInFlow - 1);
             }
 
-            let line = chartElement.append("line").styles({
-                "stroke": "#aaa",
-                "stroke-width": 1
-            });
+            let line = chartElement.append("line")
+            .style(
+                "stroke", "#aaa",
+            )
+            .style(
+                "stroke-width", 1
+            );
 
-            line.attrs({
-                x1: 0,//leftSpace + gapBetweenCharts / 2,
-                x2: leftSpace + uniqueColumns.length * chartSize.width + this.gapBetweenCharts * uniqueColumns.length,
-                y1: y,
-                y2: y
-            })
+            line.attr(
+                "x1", 0,//leftSpace + gapBetweenCharts / 2,
+            )
+            .attr(
+                "x2", leftSpace + uniqueColumns.length * chartSize.width + this.gapBetweenCharts * uniqueColumns.length,
+            )
+            .attr(
+                "y1", y,
+            )
+            .attr(
+                "y2", y
+            );
         }
 
         if (settings.layoutMode === LayoutMode.Matrix) {
             for (let j = 1; j < uniqueColumns.length; ++j) { 
                 let x = leftSpace + j * chartSize.width + this.gapBetweenCharts * j;
 
-                let line = chartElement.append("line").styles({
-                    "stroke": "#aaa",
-                    "stroke-width": 1
-                });
+                let line = chartElement
+                .append("line")
+                .style(
+                    "stroke", "#aaa"
+                )
+                .style(
+                    "stroke-width", 1
+                );
 
-                line.attrs({
-                    x1: x,
-                    x2: x,
-                    y1: 0,
-                    y2: topSpace + uniqueRows.length * chartSize.height + this.gapBetweenCharts * uniqueRows.length
-                });
+                line.attr(
+                    "x1", x,
+                )
+                .attr(
+                    "x2", x,
+                )
+                .attr(
+                    "y1", 0,
+                )
+                .attr(
+                    "y2", topSpace + uniqueRows.length * chartSize.height + this.gapBetweenCharts * uniqueRows.length
+                )
             }
         }            
     }
@@ -393,15 +445,21 @@ export class RenderVisual {
         }
 
         topTitlestext
-            .styles({ 
-                "text-anchor": "middle",
-                "font-size": fontSizeInPx,
-                "font-family": fontFamily,
-                "fill": settings.fontColor
-            })
-            .attrs({
-                dy: "0.3em"
-            })
+            .style(
+                "text-anchor", "middle",
+            )
+            .style(
+                "font-size", fontSizeInPx,
+            )
+            .style(
+                "font-family", fontFamily,
+            )
+            .style(
+                "fill", settings.fontColor
+            )
+            .attr(
+                "dy", "0.3em"
+            )
             .text(d => {
                 if (d || d === 0) {
                     textProperties.text = d.toString();
@@ -411,12 +469,12 @@ export class RenderVisual {
                 return null;
             })
             .call((text: d3Selection<any>) => {
-                const textSelectionX: d3Selection<any> = select(text[0][0]);
+                const textSelectionX: d3Selection<any> = d3.select(text[0][0]);
                 let x = leftSpace + chartSize.width / 2;
 
-                textSelectionX.attrs({
-                    "transform": svg.translate(x, topSpace + textHeight / 2)
-                });                    
+                textSelectionX.attr(
+                    "transform", svg.translate(x, topSpace + textHeight / 2)
+                );
             });
     }
 
@@ -449,15 +507,21 @@ export class RenderVisual {
             }
 
             topTitlestext
-                .styles({ 
-                    "text-anchor": "middle",
-                    "font-size": fontSizeInPx,
-                    "font-family": fontFamily,
-                    "fill": settings.fontColor
-                })
-                .attrs({
-                    dy: "1em"
-                })
+                .style(
+                    "text-anchor", "middle"
+                )
+                .style(
+                    "font-size", fontSizeInPx,
+                )
+                .style( 
+                    "font-family", fontFamily,
+                )
+                .style(
+                    "fill", settings.fontColor
+                )
+                .attr(
+                    "dy", "1em"
+                )
                 .text(d => {
                     if (d) {
                         textProperties.text = d && d.toString();
@@ -468,12 +532,12 @@ export class RenderVisual {
                 })
                 .call((text: d3Selection<any>) => {
                     for (let j = 0; j < uniqueColumns.length; ++j) { 
-                        const textSelectionX: d3Selection<any> = select(text[0][j]);
+                        const textSelectionX: d3Selection<any> = d3.select(text[0][j]);
                         let x = leftSpace + j * chartSize.width + chartSize.width / 2 + this.gapBetweenCharts * j;
 
-                        textSelectionX.attrs({
-                            "transform": svg.translate(x, topSpace / 2)
-                        });
+                        textSelectionX.attr(
+                            "transform", svg.translate(x, topSpace / 2)
+                        );
                     }
                 });
         }
@@ -497,12 +561,18 @@ export class RenderVisual {
             .remove();
 
         leftTitlesText
-            .styles({ 
-                "text-anchor": "middle",
-                "font-size": fontSizeInPx,
-                "font-family": fontFamily,
-                "fill": settings.fontColor
-            })
+            .style(
+                "text-anchor", "middle"
+            )
+            .style(
+                "font-size", fontSizeInPx,
+            )
+            .style(
+                "font-family", fontFamily,
+            )
+            .style(
+                "fill", settings.fontColor
+            )
             .text(d => {
                 if (d) {
                     textProperties.text = d && d.toString();
@@ -513,7 +583,7 @@ export class RenderVisual {
             })
             .call((text: d3Selection<any>) => {
                 for (let i = 0; i < uniqueRows.length; ++i) { 
-                    const textSelectionX: d3Selection<any> = select(text[0][i]);
+                    const textSelectionX: d3Selection<any> = d3.select(text[0][i]);
                     let y = 0;
 
                     if (settings.layoutMode === LayoutMode.Flow) {
@@ -524,9 +594,9 @@ export class RenderVisual {
                         y = i * chartSize.height + chartSize.height / 2 + topSpace * 2 + this.gapBetweenCharts * i;
                     }                        
 
-                    textSelectionX.attrs({
-                        "transform": svg.translate(leftSpace / 2, y)
-                    });
+                    textSelectionX.attr(
+                        "transform", svg.translate(leftSpace / 2, y)
+                    );
                 }
             });
     }
@@ -557,27 +627,39 @@ export class RenderVisual {
 
         line
             .classed("const-line", true)                    
-            .styles({
-                display: settings.show ? "unset" : "none",
-                stroke: settings.lineColor,
-                "stroke-opacity": 1 - settings.transparency / 100,
-                "stroke-width": "3px"
-            })
-            .attrs({
-                "x2": x,
-                "y2": height,
-                "x1": x
-            });
+            .style(
+                "display", settings.show ? "unset" : "none"
+            )
+            .style(
+                "stroke", settings.lineColor,
+            )
+            .style(
+                "stroke-opacity", 1 - settings.transparency / 100,
+            )
+            .style(
+                "stroke-width", "3px"
+            )
+            .attr(
+                "x2", x
+            )
+            .attr(
+                "y2", height
+            )
+            .attr(
+                "x1", x
+            )
 
         if (settings.lineStyle === LineStyle.Dotted) {
-            line.styles({
-                "stroke-dasharray": "1, 5",
-                "stroke-linecap": "round"
-            });
+            line.style(
+                "stroke-dasharray", "1, 5",
+            );
+            line.style(
+                "stroke-linecap", "round"
+            );
         } else if (settings.lineStyle === LineStyle.Dashed) {
-            line.styles({
-                "stroke-dasharray": "5, 5"
-            });
+            line.style(
+                "stroke-dasharray", "5, 5"
+            );
         }
 
         let textProperties: TextProperties = {
@@ -601,17 +683,21 @@ export class RenderVisual {
                         .classed("const-label", true);
 
             label
-                .attrs({
-                    transform: this.getTranslateForStaticLineLabel(x, y, textWidth, textHeight, settings, axes, height)
-                });
+                .attr(
+                    "transform", this.getTranslateForStaticLineLabel(x, y, textWidth, textHeight, settings, axes, height)
+                );
 
             label
                 .text(text)
-                .styles({
-                    "font-family": "wf_standard-font, helvetica, arial, sans-serif",
-                    "font-size": "10px",
-                    fill: settings.fontColor
-                });
+                .style(
+                    "font-family", "wf_standard-font, helvetica, arial, sans-serif"
+                )
+                .style(
+                    "font-size", "10px",
+                )
+                .style(
+                    "fill", settings.fontColor
+                );
         }
     }
 

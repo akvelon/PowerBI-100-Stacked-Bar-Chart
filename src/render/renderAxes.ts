@@ -212,17 +212,25 @@ export class RenderAxes {
 
             let strokeDasharray = visualUtils.getLineStyleParam(lineStyle);
 
-            axisText.styles({
-                "fill": color,
-                "font-size": fontSize,
-                "font-family": fontFamily
-            });
+            axisText.style(
+                "fill", color,
+            )
+            .style(
+                "font-size", fontSize,
+            )
+            .style(
+                "font-family", fontFamily
+            );
 
-            axisLines.styles({
-                "stroke": gridlinesColor,
-                "stroke-width": strokeWidth,
-                "stroke-dasharray": strokeDasharray
-            });
+            axisLines.style(
+                "stroke", gridlinesColor,
+            )
+            .style(
+                "stroke-width", strokeWidth,
+            )
+            .style(
+                "stroke-dasharray", strokeDasharray
+            );
 
             if (showGridlines) {
                 axisLines.style("opacity", "1");
@@ -242,12 +250,18 @@ export class RenderAxes {
             let fontSize: string = PixelConverter.toString(settings.categoryAxis.fontSize);
             let fontFamily: string = settings.categoryAxis.fontFamily;
 
-            axisText.styles({
-                "fill": color,
-                "stroke": "none",
-                "font-size": fontSize,
-                "font-family": fontFamily
-            });
+            axisText.style(
+                "fill", color,
+            )
+            .style(
+                "stroke", "none",
+            )
+            .style(
+                "font-size", fontSize,
+            )
+            .style(
+                "font-family", fontFamily
+            );
 
         } else {
             yAxisSvgGroup.selectAll("*").remove();
@@ -309,17 +323,19 @@ export class RenderAxes {
         let yAxisFontFamily: string = settings.categoryAxis.titleFontFamily;
 
         axisLabelsGroup
-            .styles({ "text-anchor": "middle" })
+            .style( "text-anchor", "middle" )
             .text(d => d)
             .call((text: d3Selection<any>) => {
                 const textSelectionX: d3Selection<any> = select(text[0][0]);
 
-                textSelectionX.attrs({
-                    "transform": svg.translate(
+                textSelectionX.attr(
+                    "transform", svg.translate(
                         (width) / RenderAxes.AxisLabelOffset,
                         (height + visualSize.height + xFontSize + margin.top) / 2),
-                    "dy": '.8em'
-                });
+                )
+                .attr(
+                    "dy", '.8em'
+                );
 
                 if (showXAxisTitle && xTitle && xTitle.toString().length > 0) {
                     textSelectionX.text(xTitle as string);
@@ -331,22 +347,32 @@ export class RenderAxes {
                     textSelectionX.text(newTitle);
                 }
 
-                textSelectionX.styles({
-                    "fill": xColor,
-                    "font-size": xFontSizeString,
-                    "font-family": xAxisFontFamily
-                });
+                textSelectionX.style(
+                    "fill", xColor,
+                )
+                .style(
+                    "font-size", xFontSizeString,
+                )
+                .style(
+                    "font-family", xAxisFontFamily
+                );
 
                 const textSelectionY: d3Selection<any> = select(text[0][1]);
 
-                textSelectionY.attrs({
-                    "transform": showY1OnRight ? RenderAxes.YAxisLabelTransformRotate : RenderAxes.YAxisLabelTransformRotate,
-                    "y": showY1OnRight
+                textSelectionY.attr(
+                    "transform", showY1OnRight ? RenderAxes.YAxisLabelTransformRotate : RenderAxes.YAxisLabelTransformRotate,
+                )
+                .attr(
+                    "y", showY1OnRight
                         ? width - margin.right - yFontSize
                         : 0,
-                    "x": -((visualSize.height + margin.top + margin.bottom) / RenderAxes.AxisLabelOffset),
-                    "dy": (showY1OnRight ? '-' : '') + RenderAxes.DefaultDY
-                });
+                )
+                .attr(
+                    "x", -((visualSize.height + margin.top + margin.bottom) / RenderAxes.AxisLabelOffset),
+                )
+                .attr(
+                    "dy", (showY1OnRight ? '-' : '') + RenderAxes.DefaultDY
+                );
 
                 if (showYAxisTitle && yTitle && yTitle.toString().length > 0) {
                     textSelectionY.text(yTitle as string);
@@ -358,11 +384,15 @@ export class RenderAxes {
                     textSelectionY.text(newTitle);
                 }
 
-                textSelectionY.styles({
-                    "fill": yColor,
-                    "font-size": yFontSizeString,
-                    "font-family": yAxisFontFamily
-                });
+                textSelectionY.style(
+                    "fill", yColor,
+                )
+                .style(
+                    "font-size", yFontSizeString,
+                )
+                .style(
+                    "font-family", yAxisFontFamily
+                );
             });
     }
 

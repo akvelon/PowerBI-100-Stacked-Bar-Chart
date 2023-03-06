@@ -72,13 +72,15 @@ export class WebBehavior implements IInteractiveBehavior {
         let allDatapoints: VisualDataPoint[] = this.visual.getAllDataPoints();
         this.options.interactivityService.applySelectionStateToData(allDatapoints);
 
-        this.options.bars.style({
-            "fill-opacity": (p: VisualDataPoint) => visualUtils.getFillOpacity(
+        this.options.bars.style(
+            "fill-opacity", (p: VisualDataPoint) => visualUtils.getFillOpacity(
                     p.selected,
                     p.highlight,
                     !p.highlight && hasSelection,
                     !p.selected && hasHighlight),
-            "stroke": (p: VisualDataPoint)  => {
+        )
+        .style(
+            "stroke", (p: VisualDataPoint)  => {
                 if (hasSelection && visualUtils.isSelected(p.selected,
                     p.highlight,
                     !p.highlight && hasSelection,
@@ -87,8 +89,10 @@ export class WebBehavior implements IInteractiveBehavior {
                     }                        
 
                 return p.color;
-            },
-            "stroke-width": p => {
+            }
+        )
+        .style(
+            "stroke-width", p => {
                 if (hasSelection && visualUtils.isSelected(p.selected,
                     p.highlight,
                     !p.highlight && hasSelection,
@@ -98,6 +102,6 @@ export class WebBehavior implements IInteractiveBehavior {
 
                 return Visual.DefaultStrokeWidth;
             }
-        });
+        );
     }
 }

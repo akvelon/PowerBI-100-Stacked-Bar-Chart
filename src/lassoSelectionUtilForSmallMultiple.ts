@@ -3,7 +3,8 @@ import { ClassAndSelector } from "powerbi-visuals-utils-svgutils/lib/cssConstant
 
 import { d3Selection, DefaultOpacity, DimmedOpacity } from "./utils";
 import { IBarVisual, VisualDataPoint } from "./visualInterfaces";
-import { select } from "d3-selection";
+
+import * as d3 from 'd3-selection';
 
 import powerbiApi from "powerbi-visuals-api";
 import PrimitiveValue = powerbiApi.PrimitiveValue;
@@ -56,7 +57,7 @@ export class LassoSelectionForSmallMultiple {
         this.legendBucketFilled = legendBucketFilled;
 
         this.svgChart.on( `mousedown${Constants.EventNameSpace}`, (e) => { this.lasso.init( e as MouseEvent ); });
-        select('html')
+        d3.select('html')
             .on(`mousemove${Constants.EventNameSpace}`, this.onMousemove.bind(this) )
             .on(`mouseup${Constants.EventNameSpace}`, this.onMouseup.bind(this) );
     }
@@ -65,7 +66,7 @@ export class LassoSelectionForSmallMultiple {
         if ( this.svgChart ){
             this.svgChart.on( `mousedown${Constants.EventNameSpace}`, null);
         }
-        select('html')
+        d3.select('html')
             .on(`mousemove${Constants.EventNameSpace}`, null )
             .on(`mouseup${Constants.EventNameSpace}`, null );
     }
@@ -116,7 +117,7 @@ export class LassoSelectionForSmallMultiple {
     }
 
     private onClick(): void {
-        const target: d3Selection<any> = select(this.lasso.mousedown.target as HTMLElement);
+        const target: d3Selection<any> = d3.select(this.lasso.mousedown.target as HTMLElement);
 
         // a click on an empty space
         if ( !target.classed(this.barClassName) ){
@@ -236,7 +237,7 @@ class Preselection {
 
     preSelectEntireCategories(svgChart: d3Selection<any>): void {
         svgChart.selectAll('.bar-group').each(function(){
-            const bars: d3Selection<any> = select(this).selectAll('.bar');
+            const bars: d3Selection<any> = d3.select(this).selectAll('.bar');
             
             const preSelectedCategories: PrimitiveValue[] = [];
             const preRemovedCategories: PrimitiveValue[] = [];
@@ -441,17 +442,21 @@ class LassoElement {
     }
 
     setPos(x: number, y: number): void {
-        this.d3_element.styles({
-            left: x.toString() + 'px',
-            top: y.toString() + 'px'
-        });
+        this.d3_element.style(
+            "left", x.toString() + 'px'
+        );
+        this.d3_element.style(
+            "top", y.toString() + 'px'
+        );
     }
 
     setSize(width: number, height: number): void {
-        this.d3_element.styles({
-            width: width.toString() + 'px',
-            height: height.toString() + 'px'
-        });
+        this.d3_element.style(
+            "width", width.toString() + 'px',
+        );
+        this.d3_element.style(
+            "height", height.toString() + 'px'
+        );
     }
 
     private resetStyleAttribute(): void {

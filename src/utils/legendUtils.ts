@@ -9,7 +9,7 @@ import DataView = powerbiApi.DataView;
 import IVisualHost = powerbiApi.extensibility.visual.IVisualHost;
 import ISelectionId = powerbiApi.visuals.ISelectionId;
 
-import {select } from "d3-selection";
+import * as d3 from 'd3-selection';
  
 import { legendInterfaces } from "powerbi-visuals-utils-chartutils";
 import LegendDataPoint = legendInterfaces.LegendDataPoint;
@@ -230,7 +230,7 @@ export function renderLegend(
     }
 
     // Important: This code is overriding styles of chart legend util
-    const legendGroup = select('#legendGroup').node() as HTMLElement;
+    const legendGroup = d3.select('#legendGroup').node() as HTMLElement;
     legendGroup.style.fontFamily = fontFamily;
 
     legend.drawLegend(legendDataForRender, {

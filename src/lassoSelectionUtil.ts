@@ -5,7 +5,7 @@ import DataView = powerbiApi.DataView;
 
 import { CategoryDataPoints, IBarVisual, SelectionState, VisualDataPoint } from "./visualInterfaces";
 
-import { select } from "d3-selection";
+import * as d3 from 'd3-selection';
 import { DataViewConverter } from "./dataViewConverter";
 
 /*
@@ -58,8 +58,8 @@ export class LassoSelection {
             this.selection.rect_node = this.selection.rect?.node() as HTMLElement;
         }
 
-        select('.bar-chart-svg').on('mousedown.selection', (event) => { this.onMousedown(event); });
-        select('html')
+        d3.select('.bar-chart-svg').on('mousedown.selection', (event) => { this.onMousedown(event); });
+        d3.select('html')
             .on('mousemove.selection', (event) => { this.onMousemove(event); })
             .on('mouseup.selection', (event) => { this.onMouseup(event); });
     }
@@ -67,15 +67,15 @@ export class LassoSelection {
     update<Datum>(bars: d3Selection<any>): void {
         this.visibleBars = [];
         let barsArray = this.visibleBars;
-        bars.each(function (datum: Datum, index: number, outerIndex: number) {
+        bars.each(function () {
             barsArray.push(this);
         });
     }
 
     disable(): void {
         this.emptySelection();
-        select('.bar-chart-svg').on('mousedown.selection', null);
-        select('html')
+        d3.select('.bar-chart-svg').on('mousedown.selection', null);
+        d3.select('html')
             .on('mousemove.selection', null)
             .on('mouseup.selection', null);
     }
@@ -175,7 +175,7 @@ export class LassoSelection {
         if (!this.selection.mousemoved) { // Selection by click
             let target: HTMLElement | undefined = this.selection.clickEvent?.target as HTMLElement;
             let scrollIndex: number = this.indexOfFirstVisibleDataPoint;
-            if (select(target).classed(this.visual.barClassName)) {
+            if (d3.select(target).classed(this.visual.barClassName)) {
                 let targetIndex = this.visibleBars.indexOf(target);
                 if (this.selection.clickEvent?.ctrlKey) {
                     if ( this.selectionStates[scrollIndex + targetIndex] != null ) {
@@ -288,25 +288,25 @@ export class LassoSelection {
         let scrollIndex: number = this.indexOfFirstVisibleDataPoint;
         if ( this.selectionStates.indexOf('selected') === -1 && this.selectionStates.indexOf('justSelected') === -1 ) {
             for (let i: number = 0; i < this.visibleBars.length; i++) {
-                select(this.visibleBars[i]).style(
+                d3.select(this.visibleBars[i]).style(
                     'fill-opacity', DefaultOpacity,
                 );
             }
         } else {
             for (let i: number = 0; i < this.visibleBars.length; i++) {
                 let bar: HTMLElement = this.visibleBars[i];
-                let d3_bar: d3Selection<SVGRectElement> = select(bar);
+                let d3_bar: d3Selection<SVGRectElement> = d3.select(bar);
                 if (
                     this.selectionStates[i + scrollIndex] === 'selected'
                     || this.selectionStates[i + scrollIndex] === 'justSelected'
                 ) {
-                    d3_bar.styles({
-                        'fill-opacity': DefaultOpacity
-                    });
+                    d3_bar.style(
+                        'fill-opacity', DefaultOpacity
+                    );
                 } else {
-                    d3_bar.styles({
-                        'fill-opacity': DimmedOpacity
-                    });
+                    d3_bar.style(
+                        'fill-opacity', DimmedOpacity
+                    );
                 }
             }
         }
@@ -327,17 +327,21 @@ export class LassoSelection {
     }
 
     private setRectPos(x: number, y: number): void {
-        this.selection.rect.styles({
-            left: x.toString() + 'px',
-            top: y.toString() + 'px'
-        });
+        this.selection.rect.style(
+            "left", x.toString() + 'px',
+        );
+        this.selection.rect.style(
+            "top", y.toString() + 'px'
+        );
     }
 
     private setRectSize(width: number, height: number): void {
-        this.selection.rect.styles({
-            width: width.toString() + 'px',
-            height: height.toString() + 'px'
-        });
+        this.selection.rect.style(
+            "width", width.toString() + 'px',
+        );
+        this.selection.rect.style(
+            "height", height.toString() + 'px'
+        );
     }
 
     private calculateRectDimensions(cursor: CursorPosition): void {

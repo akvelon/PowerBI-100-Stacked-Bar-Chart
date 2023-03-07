@@ -61,7 +61,7 @@ export function buildLegendData(
                 selectionId: ISelectionId,
                 color: string | null = null;
             const objects = grouping.objects;
-            if (objects && grouping.name) {
+            if (grouping.name) {
                 color = colorHelper.getColorForSeriesValue(
                     objects,
                     grouping.name);
@@ -155,11 +155,9 @@ export function buildLegendDataForMultipleValues(
         let selectionId: ISelectionId;
 
         const objects = values?.[i].source.objects;
-        if (objects) {
-            color = colorHelper.getColorForMeasure(
-                objects,
-            i + "value");
-        }
+        color = colorHelper.getColorForMeasure(
+            objects,
+        i + "value");
         
         const builder = host.createSelectionIdBuilder();
         const queryName = values?.[i].source.queryName;

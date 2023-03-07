@@ -338,30 +338,34 @@ export function calculateBarHeight(
     return barHeight;
 }
 
-export function getLabelsMaxWidth(group: d3Selection<any>): number {
+export function getLabelsMaxWidth(group: d3Selection<any> | undefined): number {
     const widths: Array<number> = [];
 
-    group.each((item: any) => {
-        let dimension: ClientRect = item.getBoundingClientRect();
-        widths.push(max([dimension.width, dimension.height]));
-    });
+    if (group) {
+        group.nodes().forEach((item: any) => {
+            let dimension: ClientRect = item.getBoundingClientRect();
+            widths.push(max([dimension.width, dimension.height]));
+        })
+    };
 
-    if (group.size() === 0) {
+    if (!group || group.size() === 0) {
         widths.push(0);
     }
 
     return max(widths);
 }
 
-export function getLabelsMaxHeight(group: d3Group<any>): number {
+export function getLabelsMaxHeight(group: d3Group<any> | undefined): number {
     const heights: Array<number> = [];
 
-    group.each((item: any) => {
-        let dimension: ClientRect = item.getBoundingClientRect();
-        heights.push(dimension.height);
-    });
+    if (group) {
+        group.nodes().forEach((item: any) => {
+            let dimension: ClientRect = item.getBoundingClientRect();
+            heights.push(dimension.height);
+        });
+    }
 
-    if (group.size() === 0) {
+    if (!group || group.size() === 0) {
         heights.push(0);
     }
 

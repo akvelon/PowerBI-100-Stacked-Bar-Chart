@@ -615,7 +615,7 @@ export class RenderVisual {
         let x = axes.x.scale(xValue);
         let y = axes.y.scale(axes.y.dataDomain[0]);
 
-        if (line[0][0]) {
+        if (line.nodes()[0]) {
             element.selectAll("line").remove();
         } 
 
@@ -673,7 +673,7 @@ export class RenderVisual {
 
         let label: d3Selection<any> = element.select(".const-label");
 
-        if (label[0][0]) {
+        if (label.nodes()[0]) {
             element.selectAll("text").remove();
         }
 

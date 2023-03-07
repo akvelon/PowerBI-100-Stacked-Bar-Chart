@@ -1238,7 +1238,7 @@ export class Visual implements IVisual {
         );
 
         let chartWidth: number = (<Element>this.xAxisSvgGroup.node()).getBoundingClientRect().width -
-                                    (<Element>this.xAxisSvgGroup.selectAll("text")[0][0]).getBoundingClientRect().width;
+                                    (<Element>this.xAxisSvgGroup.selectAll("text").nodes()[0]).getBoundingClientRect().width;
 
         visualUtils.calculateLabelCoordinates(
             this.data,
@@ -1359,8 +1359,8 @@ export class Visual implements IVisual {
     }
 
     private calculateOffsets(xAxisSvgGroup: d3Selection<SVGElement>, yAxisSvgGroup: d3Selection<SVGElement>) {
-        let xtickText: d3Group<any> = xAxisSvgGroup.selectAll("text")[0];
-        let ytickText: d3Group<any> = yAxisSvgGroup.selectAll("text")[0];
+        let xtickText  = xAxisSvgGroup.selectAll("text");
+        let ytickText  = yAxisSvgGroup.selectAll("text");
 
         let showYAxisTitle: boolean = this.settings.categoryAxis.show && this.settings.categoryAxis.showTitle;
         let showXAxisTitle: boolean = this.settings.valueAxis.show && this.settings.valueAxis.showTitle;

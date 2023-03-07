@@ -16,7 +16,7 @@ import { IMargin } from "powerbi-visuals-utils-chartutils/lib/axis/axisInterface
 
 import { select } from "d3";
 import { max, min } from "d3-array";
-import { axis, axisInterfaces } from "powerbi-visuals-utils-chartutils";
+import { axis } from "powerbi-visuals-utils-chartutils";
 
 import createAxis = axis.createAxis;
 import { IAxisProperties } from "powerbi-visuals-utils-chartutils/lib/axis/axisInterfaces";
@@ -299,14 +299,14 @@ export class RenderAxes {
         axisLabelsGroup = axisGraphicsContext.selectAll("*")
             .data(axisLabelsData);
 
-        // When a new category added, create a new SVG group for it.
-        axisLabelsGroup.enter()
-            .append("text")
-            .attr("class", Selectors.AxisLabelSelector.className);
-
         // For removed categories, remove the SVG group.
         axisLabelsGroup.exit()
             .remove();
+
+        // When a new category added, create a new SVG group for it.
+        const axisLabelsGroupEnter = axisLabelsGroup.enter()
+            .append("text")
+            .attr("class", Selectors.AxisLabelSelector.className);
 
         let xColor: string = settings.valueAxis.axisTitleColor;
         let xFontSize: number = parseInt(settings.valueAxis.titleFontSize.toString());
@@ -323,10 +323,11 @@ export class RenderAxes {
         let yAxisFontFamily: string = settings.categoryAxis.titleFontFamily;
 
         axisLabelsGroup
+            .merge(axisLabelsGroupEnter)
             .style( "text-anchor", "middle" )
             .text(d => d)
             .call((text: d3Selection<any>) => {
-                const textSelectionX: d3Selection<any> = select(text[0][0]);
+                const textSelectionX: d3Selection<any> = select(text.nodes()[0]);
 
                 textSelectionX.attr(
                     "transform", svg.translate(
@@ -357,7 +358,7 @@ export class RenderAxes {
                     "font-family", xAxisFontFamily
                 );
 
-                const textSelectionY: d3Selection<any> = select(text[0][1]);
+                const textSelectionY: d3Selection<any> = select(text.nodes()[1]);
 
                 textSelectionY.attr(
                     "transform", showY1OnRight ? RenderAxes.YAxisLabelTransformRotate : RenderAxes.YAxisLabelTransformRotate,

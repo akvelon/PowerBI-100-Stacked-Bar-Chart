@@ -114,8 +114,34 @@ module.exports = {
                 type: "javascript/auto"
             },
             {
-                test: /\.(css|scss)?$/,
-                use: [require.resolve('style-loader'), require.resolve('css-loader')],
+                test: /\.less$/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader
+                    },
+                    {
+                        loader: require.resolve('css-loader')
+                    },
+                    {
+                        loader: require.resolve('less-loader'),
+                        options: {
+                            lessOptions:{
+                                paths: [path.resolve(__dirname, "..", 'node_modules')]
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader
+                    },
+                    {
+                        loader: require.resolve('css-loader')
+                    }
+                ]
             },
             {
                 test: /\.(woff|ttf|ico|woff2|jpg|jpeg|png|webp|svg)$/i,

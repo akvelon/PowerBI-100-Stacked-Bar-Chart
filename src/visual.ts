@@ -73,6 +73,8 @@ import { CssConstants, IMargin, manipulation as svg } from "powerbi-visuals-util
 import * as d3 from 'd3-selection';
 import { d3Selection as d3Selection, d3Update as d3Update, d3Group as d3Group } from "./utils";
 
+import "../style/visual.less";
+
 "use strict";
 // import svg = powerbi.extensibility.utils.svg;
 // import CssConstants = svg.CssConstants;

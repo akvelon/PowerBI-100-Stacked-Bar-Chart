@@ -62,17 +62,18 @@ export class RenderVisual {
         hasHighlight: boolean) {
         // Select all bar groups in our chart and bind them to our categories.
         // Each group will contain a set of bars, one for each of the values in category.
-        const barGroupSelect = visualSvgGroup.selectAll(Selectors.BarGroupSelect.selectorName)
+        let barGroupSelect = visualSvgGroup.selectAll(Selectors.BarGroupSelect.selectorName)
             .data([data.dataPoints]);
-
-        // When a new category added, create a new SVG group for it.
-        barGroupSelect.enter()
-            .append("g")
-            .attr("class", Selectors.BarGroupSelect.className);
 
         // For removed categories, remove the SVG group.
         barGroupSelect.exit()
             .remove();
+
+        // When a new category added, create a new SVG group for it.
+        barGroupSelect = barGroupSelect.enter()
+            .append("g")
+            .attr("class", Selectors.BarGroupSelect.className)
+            .merge(<any>barGroupSelect);
 
         // Update the position of existing SVG groups.
         // barGroupSelect.attr("transform", d => `translate(0, ${data.axes.y(d.category)})`);
@@ -80,17 +81,19 @@ export class RenderVisual {
         // Now we bind each SVG group to the values in corresponding category.
         // To keep the length of the values array, we transform each value into object,
         // that contains both value and total count of all values in this category.
-        const barSelect = barGroupSelect
+        let barSelect = barGroupSelect
             .selectAll(Selectors.BarSelect.selectorName)
             .data(data.dataPoints);
-
-        // For each new value, we create a new rectange.
-        barSelect.enter().append("rect")
-            .attr("class", Selectors.BarSelect.className);
-
+            
         // Remove rectangles, that no longer have matching values.
         barSelect.exit()
-            .remove();
+        .remove();
+
+        // For each new value, we create a new rectange.
+        const barSelectEnter = barSelect.enter().append("rect")
+            .attr("class", Selectors.BarSelect.className);
+
+        barSelect = barSelect.merge(barSelectEnter);
 
         // Set the size and position of existing rectangles.
         barSelect

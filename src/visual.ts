@@ -723,7 +723,7 @@ export class Visual implements IVisual {
 
                 let barGroup = chart
                     .append("g")
-                    .classed("bar-group", true)
+                    .classed(Selectors.BarGroupSelect.className, true)
                     .attr(
                         "transform", svg.translate(marginLeft + (yHasRightPosition ? 0 : yAxisSize), 0)
                     );
@@ -744,7 +744,9 @@ export class Visual implements IVisual {
                 barSelect.exit()
                     .remove();
 
-                const barSelectEnter = barSelect.enter().append("rect")
+                const barSelectEnter = barSelect
+                    .enter()
+                    .append("rect")
                     .attr("class", Selectors.BarSelect.className);
 
                 barSelect = barSelect.merge(barSelectEnter);

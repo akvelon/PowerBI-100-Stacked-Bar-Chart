@@ -458,7 +458,6 @@ export class Visual implements IVisual {
     }
 
     public smallMultipleProcess(viewport: IViewport) {
-
         let uniqueColumns: PrimitiveValue[] = this.allDataPoints.map(x => x.columnBy).filter((v, i, a) => a.indexOf(v) === i);
         let uniqueRows: PrimitiveValue[] = this.allDataPoints.map(x => x.rowBy).filter((v, i, a) => a.indexOf(v) === i);
         let uniqueCategories: PrimitiveValue[] = this.allDataPoints.map(x => x.category).filter((v, i, a) => a.indexOf(v) === i);
@@ -1006,7 +1005,6 @@ export class Visual implements IVisual {
         if (!this.optionsAreValid(options)) {
             return;
         }
-        debugger;
 
         const dataView = options && options.dataViews && options.dataViews[0];
 

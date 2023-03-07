@@ -434,13 +434,15 @@ export class RenderVisual {
         let topTitles: d3Selection<SVGElement> = chartElement.append("svg");
         let topTitlestext: d3Update<PrimitiveValue> = topTitles.selectAll("*").data([uniqueColumns[index]]);
 
-        topTitlestext.enter()
+        const topTitlestextEnter = topTitlestext.enter()
             .append("text")
             .attr("class", Selectors.AxisLabelSelector.className);
 
         // For removed categories, remove the SVG group.
         topTitlestext.exit()
             .remove();
+
+        topTitlestext = topTitlestext.merge(topTitlestextEnter);
 
         let textProperties: TextProperties = {
             fontFamily,
@@ -472,7 +474,7 @@ export class RenderVisual {
                 return null;
             })
             .call((text: d3Selection<any>) => {
-                const textSelectionX: d3Selection<any> = d3.select(text[0][0]);
+                const textSelectionX: d3Selection<any> = text;
                 let x = leftSpace + chartSize.width / 2;
 
                 textSelectionX.attr(
@@ -496,13 +498,15 @@ export class RenderVisual {
             let topTitles: d3Selection<SVGElement> = chartElement.append("svg");
             let topTitlestext: d3Update<PrimitiveValue> = topTitles.selectAll("*").data(uniqueColumns);
 
-            topTitlestext.enter()
+            const topTitlestextEnter = topTitlestext.enter()
                 .append("text")
                 .attr("class", Selectors.AxisLabelSelector.className);
 
             // For removed categories, remove the SVG group.
             topTitlestext.exit()
                 .remove();
+
+            topTitlestext = topTitlestext.merge(topTitlestextEnter);
 
             let textProperties: TextProperties = {
                 fontFamily,
@@ -534,8 +538,8 @@ export class RenderVisual {
                     return null;
                 })
                 .call((text: d3Selection<any>) => {
-                    for (let j = 0; j < uniqueColumns.length; ++j) { 
-                        const textSelectionX: d3Selection<any> = d3.select(text[0][j]);
+                    for (let j = 0; j < uniqueColumns.length; ++j) {
+                        const textSelectionX: d3Selection<any> = text;
                         let x = leftSpace + j * chartSize.width + chartSize.width / 2 + this.gapBetweenCharts * j;
 
                         textSelectionX.attr(
@@ -555,13 +559,15 @@ export class RenderVisual {
         let leftTitles: d3Selection<SVGElement> = chartElement.append("svg");
         let leftTitlesText: d3Update<PrimitiveValue> = leftTitles.selectAll("*").data(uniqueRows);
 
-        leftTitlesText.enter()
+        const leftTitlesTextEnter = leftTitlesText.enter()
             .append("text")
             .attr("class", Selectors.AxisLabelSelector.className);
 
         // For removed categories, remove the SVG group.
         leftTitlesText.exit()
             .remove();
+
+        leftTitlesText = leftTitlesText.merge(leftTitlesTextEnter);
 
         leftTitlesText
             .style(
@@ -586,7 +592,7 @@ export class RenderVisual {
             })
             .call((text: d3Selection<any>) => {
                 for (let i = 0; i < uniqueRows.length; ++i) { 
-                    const textSelectionX: d3Selection<any> = d3.select(text[0][i]);
+                    const textSelectionX: d3Selection<any> = d3.select(text.nodes()[i]);
                     let y = 0;
 
                     if (settings.layoutMode === LayoutMode.Flow) {

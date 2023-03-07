@@ -342,8 +342,8 @@ export class RenderVisual {
     public static renderTooltip(selection: d3Update<any>, tooltipServiceWrapper: ITooltipServiceWrapper): void {
         tooltipServiceWrapper.addTooltip(
             selection,
-            (tooltipEvent: TooltipEventArgs<VisualDataPoint>) => {
-                return (<VisualDataPoint>tooltipEvent.data).tooltips;
+            (tooltipEvent: VisualDataPoint) => {
+                return (tooltipEvent).tooltips;
             },
             null,
             true);

@@ -94,7 +94,7 @@ import ScrollbarState = scrollbarUtil.ScrollbarState;
 // powerbi.extensibility.utils.type
 // import ILegend = powerbi.extensibility.utils.chart.legend.ILegend;
 // import createLegend = powerbi.extensibility.utils.chart.legend.createLegend;
-import { AxisRangeType, LayoutMode, legendSettings, smallMultipleSettings, VisualSettings } from "./settings";
+import { AxisRangeType, HorizontalPosition, LayoutMode, legendSettings, smallMultipleSettings, VisualSettings } from "./settings";
 import { AxesDomains, CategoryDataPoints, IAxes, IAxesSize, ISize, LegendProperties, LegendSize, SmallMultipleSizeOptions, VisualData, VisualDataPoint, VisualMeasureMetadata, VisualTranslation } from "./visualInterfaces";
 
 import { CustomLegendBehavior } from "./customLegendBehavior";
@@ -627,7 +627,8 @@ export class Visual implements IVisual {
                 let xAxisSvgGroup: d3Selection<SVGElement> = chart.append("g");
                 let yAxisSvgGroup: d3Selection<SVGElement> = chart.append("g");
 
-                let yHasRightPosition: boolean = this.settings.categoryAxis.show && this.settings.categoryAxis.position === "right";
+                debugger;
+                let yHasRightPosition: boolean = this.settings.categoryAxis.show && this.settings.categoryAxis.position === HorizontalPosition.Right;
 
                 xAxisSvgGroup.attr(
                     "transform",
@@ -1400,16 +1401,12 @@ export class Visual implements IVisual {
     }
 
     private calculateVisualMargin(): void {
-        let yHasRightPosition: boolean = this.settings.categoryAxis.show && this.settings.categoryAxis.position === "right";
+        let yHasRightPosition: boolean = this.settings.categoryAxis.show && this.settings.categoryAxis.position === HorizontalPosition.Right;
         let extendedLeftMargin: boolean = yHasRightPosition || !this.settings.categoryAxis.show;
         let extendedRightMargin: boolean = !yHasRightPosition || !this.settings.categoryAxis.show;
 
         // Set up margins for our visual
         this.visualMargin = { top: 5, bottom: 5, left: extendedLeftMargin ? 15 : 5 , right: extendedRightMargin ? 15 : 5  };
-    }
-
-    private yAxisHasRightPosition(): boolean {
-        return this.settings.categoryAxis.show && this.settings.categoryAxis.position === "right";
     }
 
     private calculateVisualSize(legendSize: LegendSize, xAxisTitleThickness: number): void {

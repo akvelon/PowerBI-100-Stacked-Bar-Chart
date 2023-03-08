@@ -8,22 +8,23 @@ import DataViewPropertyValue = powerbiApi.DataViewPropertyValue;
 import IViewport = powerbiApi.IViewport;
 
 import { AxesDomains, IAxes, ISize, VisualDataPoint, VisualMeasureMetadata } from "../visualInterfaces";
-import { AxisRangeType, VisualSettings } from "../settings";
+import { AxisRangeType, HorizontalPosition, VisualSettings } from "../settings";
 import { d3Selection, d3Update } from "../utils";
 import * as visualUtils from "../utils";
-import { IMargin } from "powerbi-visuals-utils-chartutils/lib/axis/axisInterfaces";
+import { AxisOrientation, IMargin } from "powerbi-visuals-utils-chartutils/lib/axis/axisInterfaces";
 
 
 import { select } from "d3";
 import { max, min } from "d3-array";
 import { axis } from "powerbi-visuals-utils-chartutils";
 
-import createAxis = axis.createAxis;
 import { IAxisProperties } from "powerbi-visuals-utils-chartutils/lib/axis/axisInterfaces";
 import { textMeasurementService, valueFormatter } from "powerbi-visuals-utils-formattingutils";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
 import { valueType } from "powerbi-visuals-utils-typeutils";
+
+import { convertPositionToAxisOrientation, createAxis } from "../utils/axis/yAxisUtils";
 
 module Selectors {
     export const AxisLabelSelector = CssConstants.createClassAndSelector("axisLabel");
@@ -69,6 +70,7 @@ export class RenderAxes {
             scaleType: valueAxisScale,
             disableNice: startValue != null || endValue != null,
             useTickIntervalForDisplayUnits: true,
+            orientation: AxisOrientation.bottom
         });
 
         xAxisProperties.axis
@@ -113,6 +115,7 @@ export class RenderAxes {
             startCategory: number = skipCategoryRange ? null : settings.categoryAxis.start,
             endCategory: number = skipCategoryRange ? null : settings.categoryAxis.end;
 
+        debugger;
         yAxisProperties = createAxis({
             pixelSpan: size.height,
             dataDomain: axesDomains.yAxisDomain,
@@ -126,6 +129,7 @@ export class RenderAxes {
             isCategoryAxis: true,
             useTickIntervalForDisplayUnits: true,
             disableNice: axisType === "continuous" && (startCategory != null || endCategory != null),
+            orientation: convertPositionToAxisOrientation(settings.categoryAxis.position),
             getValueFn: (index: number, dataType: valueType.ValueType): any => {
                 if (dataType.dateTime && dateColumnFormatter) {
                     let options = {};
@@ -282,7 +286,7 @@ export class RenderAxes {
         const margin: IMargin = visualMargin,
             width: number = viewport.width,
             height: number = viewport.height,
-            yAxisOrientation: string = "right",
+            yAxisOrientation: string = HorizontalPosition.Right,
             showY1OnRight: boolean = yAxisOrientation === settings.categoryAxis.position;
 
         let showYAxisTitle: boolean = settings.categoryAxis.show && settings.categoryAxis.showTitle;

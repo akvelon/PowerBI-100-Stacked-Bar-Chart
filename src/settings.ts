@@ -72,31 +72,31 @@ export class dataPointSettings {
   public showAllDataPoints: boolean = true;
 }
 
-export enum LineStyle {
-  Dashed = <any>"dashed",
-  Solid = <any>"solid",
-  Dotted = <any>"dotted"
+export const enum LineStyle {
+  Dashed = "dashed",
+  Solid = "solid",
+  Dotted = "dotted"
 }
 
-export enum Position {
-  Behind = <any>"behind",
-  InFront = <any>"front"
+export const enum Position {
+  Behind = "behind",
+  InFront = "front"
 }
 
-export enum Text {
-  Name = <any>"name",
-  Value = <any>"value",
-  NameAndValue = <any>"nameAndValue"
+export const enum Text {
+  Name = "name",
+  Value = "value",
+  NameAndValue = "nameAndValue"
 }
 
-export enum HorizontalPosition {
-  Left = <any>"left",
-  Right = <any>"right"
+export const enum HorizontalPosition {
+  Left = "left",
+  Right = "right"
 }
 
-export enum VerticalPosition {
-  Top = <any>"top",
-  Bottom = <any>"bottom"
+export const enum VerticalPosition {
+  Top = "top",
+  Bottom = "bottom"
 }
 
 // tslint:disable-next-line:class-name
@@ -121,7 +121,7 @@ export class categoryAxisSettings {
   // Show category axis
   public show: boolean = true;
   // Position
-  public position: string = "left";
+  public position: string = HorizontalPosition.Right;
   // Axis type
   public axisType: string = "categorical";
   // Axis Scale type

@@ -42,9 +42,9 @@ export class WebBehavior implements IInteractiveBehavior {
     }
 
     public renderSelection(hasSelection: boolean) {
-        let hasHighlight = this.visual.getAllDataPoints().filter(x => x.highlight).length > 0;
+        const hasHighlight = this.visual.getAllDataPoints().filter(x => x.highlight).length > 0;
 
-        let allDatapoints: VisualDataPoint[] = this.visual.getAllDataPoints();
+        const allDatapoints: VisualDataPoint[] = this.visual.getAllDataPoints();
         this.options.interactivityService.applySelectionStateToData(allDatapoints);
 
         this.options.bars.style(

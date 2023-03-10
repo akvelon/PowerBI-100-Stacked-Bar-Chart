@@ -24,12 +24,11 @@ export function getMetadata(
 
     let xAxisLabel: string = "",
         yAxisLabel: string = "",
-        valueIndex = grouped && getMeasureIndexOfRole(grouped, ColumnValue),
-        categoryIndex = categories && getCategoryIndexOfRole(categories, ColumnCategory),
-        gradientIndex = grouped && getMeasureIndexOfRole(grouped, ColumnGradient),
         valueCol: DataViewMetadataColumn | undefined,
         categoryCol: DataViewMetadataColumn | undefined;
-
+    const valueIndex = grouped && getMeasureIndexOfRole(grouped, ColumnValue),
+        categoryIndex = categories && getCategoryIndexOfRole(categories, ColumnCategory),
+        gradientIndex = grouped && getMeasureIndexOfRole(grouped, ColumnGradient);
 
     if (grouped && grouped.length) {
         const firstGroup: DataViewValueColumnGroup = grouped[0];

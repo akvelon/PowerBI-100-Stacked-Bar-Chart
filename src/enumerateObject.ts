@@ -15,8 +15,8 @@ import { VisualData, VisualDataPoint } from "./visualInterfaces";
 
 export class EnumerateObject {
     private static fillDataPointInstancesForLegend(visualData: VisualData, instances: VisualObjectInstance[]) {
-        for (let index in visualData.legendData.dataPoints) {
-            let dataPoint: LegendDataPoint = visualData.legendData.dataPoints[index];
+        for (const index in visualData.legendData.dataPoints) {
+            const dataPoint: LegendDataPoint = visualData.legendData.dataPoints[index];
 
             instances.push({
                 objectName: "dataPoint",
@@ -32,8 +32,8 @@ export class EnumerateObject {
     }
 
     private static fillDataPointInstancesForNoLegend(visualData: VisualData, instances: VisualObjectInstance[]) {
-        for (let index in visualData.dataPoints) {
-            let dataPoint: VisualDataPoint = visualData.dataPoints[index];
+        for (const index in visualData.dataPoints) {
+            const dataPoint: VisualDataPoint = visualData.dataPoints[index];
 
             instances.push({
                 objectName: "dataPoint",
@@ -48,15 +48,9 @@ export class EnumerateObject {
         }
     }
 
-    public static setInstances(
-        settings: VisualSettings,
-        instanceEnumeration: any,
-        yIsScalar: boolean,
-        visualData: VisualData) {
-
-        let instances: VisualObjectInstance[] = (instanceEnumeration as VisualObjectInstanceEnumerationObject).instances;
-        let instance: VisualObjectInstance = instances[0];
-
+    public static setInstances(settings: VisualSettings, instanceEnumeration: any, yIsScalar: boolean, visualData: VisualData) {
+        const instances: VisualObjectInstance[] = (instanceEnumeration as VisualObjectInstanceEnumerationObject).instances;
+        const instance: VisualObjectInstance = instances[0];
         const isSmallMultiple: boolean = visualData.isSmallMultiple;
         const isCategorical: boolean = settings.categoryAxis.axisType === "categorical";
 
@@ -70,7 +64,6 @@ export class EnumerateObject {
                 } else if (visualData && visualData.dataPoints && settings.dataPoint.showAllDataPoints) {
                     this.fillDataPointInstancesForNoLegend(visualData, instances);
                 }
-
                 break;
             }
             case "categoryLabels": {
@@ -78,79 +71,14 @@ export class EnumerateObject {
                     delete instance.properties["transparency"];
                     delete instance.properties["backgroundColor"];
                 }
-
                 break;
             }
             case "categoryAxis": {
-                if (!settings.categoryAxis.showTitle) {
-                    delete instance.properties["titleStyle"];
-                    delete instance.properties["axisTitleColor"];
-                    delete instance.properties["axisTitle"];
-                    delete instance.properties["titleFontSize"];
-                    delete instance.properties["titleFontFamily"];
-                }
-
-                if (!isSmallMultiple) {
-                    delete instance.properties["rangeType"];
-                    delete instance.properties["rangeTypeNoScalar"];
-                } else {
-                    if (yIsScalar && !isCategorical) {
-                        delete instance.properties["rangeTypeNoScalar"];
-                    } else {
-                        delete instance.properties["rangeType"];
-                    }
-                }
-
-                if (yIsScalar) {
-                    if (settings.categoryAxis.axisType === "categorical") {
-                        delete instance.properties["axisScale"];
-                        delete instance.properties["axisStyle"];
-                        delete instance.properties["start"];
-                        delete instance.properties["end"];
-                    } else if (settings.categoryAxis.axisType === "continuous") {
-                        delete instance.properties["minCategoryWidth"];
-                        delete instance.properties["maximumSize"];
-                        delete instance.properties["innerPadding"];
-
-                        if (visualData.isSmallMultiple) {
-                            if (settings.categoryAxis.rangeType !== AxisRangeType.Custom) {                                    
-                                delete instance.properties["start"];
-                                delete instance.properties["end"];
-                            }
-                        }
-                    }
-                } else {
-                    delete instance.properties["axisType"];
-                    delete instance.properties["axisScale"];
-                    delete instance.properties["axisStyle"];                         
-                    delete instance.properties["precision"];
-                    delete instance.properties["start"];
-                    delete instance.properties["end"];
-                }
-
+                EnumerateObject.setCategoryAxis(settings, instance, isSmallMultiple, yIsScalar, isCategorical, visualData);
                 break;
             }
             case "valueAxis": {
-                if (!isSmallMultiple) {
-                    delete instance.properties["rangeType"];
-                } else if (settings.valueAxis.rangeType !== AxisRangeType.Custom) {                                    
-                    delete instance.properties["start"];
-                    delete instance.properties["end"];
-                }
-
-                if (!settings.valueAxis.showTitle) {
-                    delete instance.properties["titleStyle"];
-                    delete instance.properties["axisTitleColor"];
-                    delete instance.properties["axisTitle"];
-                    delete instance.properties["titleFontSize"];
-                    delete instance.properties["titleFontFamily"];
-                }
-                if (!settings.valueAxis.showGridlines) {
-                    delete instance.properties["gridlinesColor"];
-                    delete instance.properties["strokeWidth"];
-                    delete instance.properties["lineStyle"];
-                }
-
+                EnumerateObject.setValueAxis(isSmallMultiple, instance, settings);
                 break;
             }
             case "constantLine": {
@@ -162,20 +90,86 @@ export class EnumerateObject {
                     delete instance.properties["displayUnits"];
                     delete instance.properties["precision"];
                 }
-
                 break;
             }
             case "smallMultiple": {
                 if (settings.smallMultiple.layoutMode === LayoutMode.Matrix) {
                     delete instance.properties["maxRowWidth"];
                 }
-
                 if (!settings.smallMultiple.showChartTitle) {
                     delete instance.properties["fontFamily"];
                     delete instance.properties["fontSize"];
                     delete instance.properties["fontColor"];
                 }
             }
+        }
+    }
+
+    private static setValueAxis(isSmallMultiple: boolean, instance: powerbiApi.VisualObjectInstance, settings: VisualSettings) {
+        if (!isSmallMultiple) {
+            delete instance.properties["rangeType"];
+        } else if (settings.valueAxis.rangeType !== AxisRangeType.Custom) {
+            delete instance.properties["start"];
+            delete instance.properties["end"];
+        }
+        if (!settings.valueAxis.showTitle) {
+            delete instance.properties["titleStyle"];
+            delete instance.properties["axisTitleColor"];
+            delete instance.properties["axisTitle"];
+            delete instance.properties["titleFontSize"];
+            delete instance.properties["titleFontFamily"];
+        }
+        if (!settings.valueAxis.showGridlines) {
+            delete instance.properties["gridlinesColor"];
+            delete instance.properties["strokeWidth"];
+            delete instance.properties["lineStyle"];
+        }
+    }
+
+    private static setCategoryAxis(settings: VisualSettings, instance: powerbiApi.VisualObjectInstance, isSmallMultiple: boolean, yIsScalar: boolean, isCategorical: boolean, visualData: VisualData) {
+        if (!settings.categoryAxis.showTitle) {
+            delete instance.properties["titleStyle"];
+            delete instance.properties["axisTitleColor"];
+            delete instance.properties["axisTitle"];
+            delete instance.properties["titleFontSize"];
+            delete instance.properties["titleFontFamily"];
+        }
+
+        if (!isSmallMultiple) {
+            delete instance.properties["rangeType"];
+            delete instance.properties["rangeTypeNoScalar"];
+        } else {
+            if (yIsScalar && !isCategorical) {
+                delete instance.properties["rangeTypeNoScalar"];
+            } else {
+                delete instance.properties["rangeType"];
+            }
+        }
+        if (yIsScalar) {
+            if (settings.categoryAxis.axisType === "categorical") {
+                delete instance.properties["axisScale"];
+                delete instance.properties["axisStyle"];
+                delete instance.properties["start"];
+                delete instance.properties["end"];
+            } else if (settings.categoryAxis.axisType === "continuous") {
+                delete instance.properties["minCategoryWidth"];
+                delete instance.properties["maximumSize"];
+                delete instance.properties["innerPadding"];
+
+                if (visualData.isSmallMultiple) {
+                    if (settings.categoryAxis.rangeType !== AxisRangeType.Custom) {
+                        delete instance.properties["start"];
+                        delete instance.properties["end"];
+                    }
+                }
+            }
+        } else {
+            delete instance.properties["axisType"];
+            delete instance.properties["axisScale"];
+            delete instance.properties["axisStyle"];
+            delete instance.properties["precision"];
+            delete instance.properties["start"];
+            delete instance.properties["end"];
         }
     }
 }

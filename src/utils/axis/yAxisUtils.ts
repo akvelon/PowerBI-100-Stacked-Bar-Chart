@@ -84,31 +84,7 @@ export function createAxis(
   }
 
   // Prepare Tick Values for formatting
-  let tickValues: any[];
-  if (isScalar && bestTickCount === 1 && !arrayIsEmpty(dataDomain)) {
-    tickValues = [dataDomain[0]];
-  } else {
-    const minTickInterval = isScalar
-      ? getMinTickValueInterval(formatString, dataType, is100Pct)
-      : undefined;
-    tickValues = getRecommendedTickValues(
-      bestTickCount,
-      scale,
-      dataType,
-      isScalar,
-      minTickInterval
-    );
-  }
-
-  if (
-    options.scaleType &&
-    options.scaleType === axisScale.log &&
-    isLogScaleAllowed
-  ) {
-    tickValues = tickValues.filter((d) => {
-      return powerOfTen(d);
-    });
-  }
+  const tickValues = createTickValues(isScalar, bestTickCount, dataDomain, formatString, dataType, is100Pct, scale, options, isLogScaleAllowed);
 
   const formatter = createFormatter(
     scaleDomain,
@@ -124,23 +100,7 @@ export function createAxis(
     axisPrecision
   );
 
-  let axisFunction;
-  switch (orientation) {
-    case AxisOrientation.left:
-      axisFunction = axisLeft;
-      break;
-    case AxisOrientation.right:
-      axisFunction = axisRight;
-      break;
-    case AxisOrientation.bottom:
-      axisFunction = axisBottom;
-      break;
-    case AxisOrientation.top:
-      axisFunction = axisTop;
-      break;
-    default:
-      axisFunction = isVertical ? axisLeft : axisBottom;
-  }
+  const axisFunction = getAxisFunction(orientation, isVertical);
 
   const axis = axisFunction(scale)
     .tickSize(6)
@@ -157,7 +117,7 @@ export function createAxis(
       getValueFn
     );
 
-  let xLabelMaxWidth;
+  let xLabelMaxWidth: number;
   // Use category layout of labels if specified, otherwise use scalar layout of labels
   if (!isScalar && categoryThickness) {
     xLabelMaxWidth = Math.max(1, categoryThickness - TickLabelPadding * 2);
@@ -185,6 +145,48 @@ export function createAxis(
     isLogScaleAllowed: isLogScaleAllowed,
     dataDomain: dataDomain,
   };
+}
+
+function getAxisFunction(orientation: AxisOrientation, isVertical: boolean) {
+  switch (orientation) {
+    case AxisOrientation.left:
+      return axisLeft;
+    case AxisOrientation.right:
+      return axisRight;
+    case AxisOrientation.bottom:
+      return axisBottom;
+    case AxisOrientation.top:
+      return axisTop;
+    default:
+      return isVertical ? axisLeft : axisBottom;
+  }
+}
+
+function createTickValues(isScalar: boolean, bestTickCount: number, dataDomain: number[],  formatString: string, dataType: valueType.ValueType, is100Pct: boolean, scale: ScaleLinear<any, any, never>, options: CreateAxisOptionsExtended, isLogScaleAllowed: boolean) {
+  let tickValues;
+  if (isScalar && bestTickCount === 1 && !arrayIsEmpty(dataDomain)) {
+    tickValues = [dataDomain[0]];
+  } else {
+    const minTickInterval = isScalar
+      ? getMinTickValueInterval(formatString, dataType, is100Pct)
+      : undefined;
+    tickValues = getRecommendedTickValues(
+      bestTickCount,
+      scale,
+      dataType,
+      isScalar,
+      minTickInterval
+    );
+  }
+
+  if (options.scaleType &&
+    options.scaleType === axisScale.log &&
+    isLogScaleAllowed) {
+    tickValues = tickValues.filter((d) => {
+      return powerOfTen(d);
+    });
+  }
+  return tickValues;
 }
 
 function arrayIsEmpty(array: any[]): boolean {
@@ -241,9 +243,9 @@ export function convertPositionToAxisOrientation(
       return AxisOrientation.right;
 
     case VerticalPosition.Top:
-      return AxisOrientation.left;
+      return AxisOrientation.top;
 
-    case HorizontalPosition.Left:
-      return AxisOrientation.left;
+    case VerticalPosition.Bottom:
+      return AxisOrientation.bottom;
   }
 }

@@ -29,8 +29,8 @@ import { valueType } from "powerbi-visuals-utils-typeutils";
 
 import { convertPositionToAxisOrientation, createAxis } from "../utils/axis/yAxisUtils";
 
-module Selectors {
-    export const AxisLabelSelector = CssConstants.createClassAndSelector("axisLabel");
+class Selectors {
+    static AxisLabelSelector = CssConstants.createClassAndSelector("axisLabel");
 }
 
 export class RenderAxes {
@@ -50,17 +50,122 @@ export class RenderAxes {
         isSmallMultiple: boolean = false,
         barHeight: number, 
         maxYLabelsWidth = null): IAxes {
-        let xAxisProperties: IAxisProperties = null;
+        const xAxisProperties: IAxisProperties = RenderAxes.createXAxis(settings, isSmallMultiple, size, axesDomains, metadata);
 
-        let valueAxisScale: string = settings.valueAxis.axisScale;
+        // create Y axis
+        const yAxisFormatString: string = valueFormatter.getFormatStringByColumn(<any>metadata.cols.category) || valueFormatter.getFormatStringByColumn(<any>metadata.groupingColumn);
 
+        const categoryType: valueType.ValueType = axis.getCategoryValueType(metadata.cols.category);
+        const isOrdinal: boolean = axis.isOrdinal(categoryType);
+
+        const yIsScalar: boolean = !isOrdinal;
+        const categoryAxisScale: string = settings.categoryAxis.axisType === "categorical" ? "linear" : settings.categoryAxis.axisScale;
+        const axisType: string = !yIsScalar ? "categorical" : settings.categoryAxis.axisType;
+        const outerPadding: number = yIsScalar && axisType === "continuous" ? barHeight / 2 : 0;
+
+        const yAxisProperties = RenderAxes.createYAxis(metadata, host, settings, isSmallMultiple, size, axesDomains, yAxisFormatString, outerPadding, yIsScalar, categoryAxisScale, axisType, maxYLabelsWidth);
+        
+        return {
+            x: xAxisProperties,
+            y: yAxisProperties,
+            yIsScalar
+        };
+    }
+
+    private static createYAxis(metadata: VisualMeasureMetadata, host: IVisualHost, settings: VisualSettings, isSmallMultiple: boolean, size: ISize, axesDomains: AxesDomains, yAxisFormatString: string, outerPadding: number, yIsScalar: boolean, categoryAxisScale: string, axisType: string, maxYLabelsWidth: any) {
+        let dateColumnFormatter = null;
+
+        if (metadata.cols.category) {
+            dateColumnFormatter = valueFormatter.create({
+                format: valueFormatter.getFormatStringByColumn(<any>metadata.cols.category, true) || metadata.cols.category.format,
+                cultureSelector: host.locale
+            });
+        } else if (metadata.groupingColumn) {
+            dateColumnFormatter = valueFormatter.create({
+                format: valueFormatter.getFormatStringByColumn(<any>metadata.groupingColumn, true) || metadata.groupingColumn.format,
+                cultureSelector: host.locale
+            });
+        }
+
+        const innerPadding: number = settings.categoryAxis.innerPadding / 100;
+
+        const fontSize: string = PixelConverter.toString(settings.categoryAxis.fontSize);
+        const fontFamily: string = settings.categoryAxis.fontFamily;
+
+        const skipCategoryRange: boolean = isSmallMultiple && settings.categoryAxis.rangeType !== AxisRangeType.Custom, startCategory: number = skipCategoryRange ? null : settings.categoryAxis.start, endCategory: number = skipCategoryRange ? null : settings.categoryAxis.end;
+
+        const yAxisProperties = createAxis({
+            pixelSpan: size.height,
+            dataDomain: axesDomains.yAxisDomain,
+            metaDataColumn: metadata.cols.category || metadata.groupingColumn,
+            formatString: yAxisFormatString,
+            outerPadding: outerPadding,
+            innerPadding: innerPadding,
+            scaleType: yIsScalar ? categoryAxisScale : undefined,
+            isScalar: yIsScalar && axisType === "continuous",
+            isVertical: true,
+            isCategoryAxis: true,
+            useTickIntervalForDisplayUnits: true,
+            disableNice: axisType === "continuous" && (startCategory != null || endCategory != null),
+            orientation: convertPositionToAxisOrientation(settings.categoryAxis.position),
+            getValueFn: (index: number, dataType: valueType.ValueType): any => {
+                if (dataType.dateTime && dateColumnFormatter) {
+                    let options = {};
+                    if (yIsScalar && axisType === "continuous") {
+                        options = {
+                            month: "short",
+                            year: "numeric"
+                        };
+                    } else {
+                        options = {
+                            day: "numeric",
+                            month: "numeric",
+                            year: "numeric"
+                        };
+                    }
+
+                    const formattedString: string = dateColumnFormatter.format(new Date(index).toLocaleString("en-US", options));
+                    if (maxYLabelsWidth && axisType !== "continuous") {
+                        const textProperties: TextProperties = {
+                            text: formattedString,
+                            fontFamily: fontFamily,
+                            fontSize: fontSize
+                        };
+                        return textMeasurementService.getTailoredTextOrDefault(textProperties, maxYLabelsWidth);
+                    }
+                    return formattedString;
+                }
+
+                if (maxYLabelsWidth && axisType !== "continuous") {
+                    const textProperties: TextProperties = {
+                        text: index.toString(),
+                        fontFamily: fontFamily,
+                        fontSize: fontSize
+                    };
+                    return textMeasurementService.getTailoredTextOrDefault(textProperties, maxYLabelsWidth);
+                }
+                return index;
+            }
+        });
+
+        // For Y axis, make ticks appear full-width.
+        yAxisProperties.axis
+            .tickPadding(RenderAxes.DefaultAxisYTickPadding)
+            // .orient(settings.categoryAxis.position)
+            .tickSizeInner(0)
+            .tickSizeOuter(0);
+
+        yAxisProperties.axisLabel = settings.categoryAxis.showTitle ? metadata.labels.y : "";
+        return yAxisProperties;
+    }
+
+    private static createXAxis(settings: VisualSettings, isSmallMultiple: boolean, size: ISize, axesDomains: AxesDomains, metadata: VisualMeasureMetadata) {
+        const valueAxisScale: string = settings.valueAxis.axisScale;
         const percentageFormat: string = "#,0.##%";
 
-        const skipValueRange: boolean = isSmallMultiple && settings.valueAxis.rangeType !== AxisRangeType.Custom,
-            startValue: number = skipValueRange ? null : settings.valueAxis.start,
-            endValue: number = skipValueRange ? null : settings.valueAxis.end;
+        const skipValueRange: boolean = isSmallMultiple && settings.valueAxis.rangeType !== AxisRangeType.Custom, startValue: number = skipValueRange ? null : settings.valueAxis.start, endValue: number = skipValueRange ? null : settings.valueAxis.end;
 
-        xAxisProperties = createAxis({
+        const xAxisProperties = createAxis({
             pixelSpan: size.width,
             dataDomain: axesDomains.xAxisDomain,
             metaDataColumn: metadata.cols.value,
@@ -82,121 +187,10 @@ export class RenderAxes {
             .tickSizeOuter(1);
 
         xAxisProperties.axisLabel = settings.valueAxis.showTitle ? metadata.labels.x : "";
-
-        // create Y axis
-        let yAxisProperties: IAxisProperties = null;
-        let yAxisFormatString: string = valueFormatter.getFormatStringByColumn(<any>metadata.cols.category) || valueFormatter.getFormatStringByColumn(<any>metadata.groupingColumn);
-
-        const categoryType: valueType.ValueType = axis.getCategoryValueType(metadata.cols.category);
-        let isOrdinal: boolean = axis.isOrdinal(categoryType);
-
-        let yIsScalar: boolean = !isOrdinal;
-        let categoryAxisScale: string = settings.categoryAxis.axisType === "categorical" ? "linear" : settings.categoryAxis.axisScale;
-        let axisType: string = !yIsScalar ? "categorical" : settings.categoryAxis.axisType;
-
-        let dateColumnFormatter = null;
-
-        if (metadata.cols.category) {
-            dateColumnFormatter = valueFormatter.create({
-                format: valueFormatter.getFormatStringByColumn(<any>metadata.cols.category, true) || metadata.cols.category.format,
-                cultureSelector: host.locale
-            });
-        } else if (metadata.groupingColumn) {
-            dateColumnFormatter = valueFormatter.create({
-                format: valueFormatter.getFormatStringByColumn(<any>metadata.groupingColumn, true) || metadata.groupingColumn.format,
-                cultureSelector: host.locale
-            });
-        }
-
-        let innerPadding: number = settings.categoryAxis.innerPadding / 100;
-        const outerPadding: number = yIsScalar && axisType === "continuous" ? barHeight / 2 : 0;
-
-        let fontSize: string = PixelConverter.toString(settings.categoryAxis.fontSize);
-        let fontFamily: string = settings.categoryAxis.fontFamily;
-
-        const skipCategoryRange: boolean = isSmallMultiple && settings.categoryAxis.rangeType !== AxisRangeType.Custom,
-            startCategory: number = skipCategoryRange ? null : settings.categoryAxis.start,
-            endCategory: number = skipCategoryRange ? null : settings.categoryAxis.end;
-
-        debugger;
-        yAxisProperties = createAxis({
-            pixelSpan: size.height,
-            dataDomain: axesDomains.yAxisDomain,
-            metaDataColumn: metadata.cols.category || metadata.groupingColumn,
-            formatString: yAxisFormatString,
-            outerPadding: outerPadding,
-            innerPadding: innerPadding,
-            scaleType: yIsScalar ? categoryAxisScale : undefined,
-            isScalar: yIsScalar && axisType === "continuous",
-            isVertical: true,
-            isCategoryAxis: true,
-            useTickIntervalForDisplayUnits: true,
-            disableNice: axisType === "continuous" && (startCategory != null || endCategory != null),
-            orientation: convertPositionToAxisOrientation(settings.categoryAxis.position),
-            getValueFn: (index: number, dataType: valueType.ValueType): any => {
-                if (dataType.dateTime && dateColumnFormatter) {
-                    let options = {};
-                    
-                    if (yIsScalar && axisType === "continuous") {
-                        options = {
-                            month: "short",
-                            year: "numeric"
-                        };
-                    } else {
-                        options = {
-                            day: "numeric",
-                            month: "numeric",
-                            year: "numeric"
-                        };
-                    }
-
-                    let formattedString: string = dateColumnFormatter.format(new Date(index).toLocaleString("en-US", options));
-
-                    if (maxYLabelsWidth && axisType !== "continuous") {                            
-
-                        let textProperties: TextProperties = {
-                            text: formattedString,
-                            fontFamily: fontFamily,
-                            fontSize: fontSize
-                        };
-
-                        return  textMeasurementService.getTailoredTextOrDefault(textProperties, maxYLabelsWidth);
-                    }
-
-                    return formattedString;
-                }
-                
-                if (maxYLabelsWidth && axisType !== "continuous") {                            
-
-                    let textProperties: TextProperties = {
-                        text: index.toString(),
-                        fontFamily: fontFamily,
-                        fontSize: fontSize
-                    };
-
-                    return  textMeasurementService.getTailoredTextOrDefault(textProperties, maxYLabelsWidth);
-                }
-                return index;
-            }
-        });
-
-        // For Y axis, make ticks appear full-width.
-        yAxisProperties.axis
-            .tickPadding(RenderAxes.DefaultAxisYTickPadding)
-            // .orient(settings.categoryAxis.position)
-            .tickSizeInner(0)
-            .tickSizeOuter(0);
-
-        yAxisProperties.axisLabel = settings.categoryAxis.showTitle ? metadata.labels.y : "";
-
-        return {
-            x: xAxisProperties,
-            y: yAxisProperties,
-            yIsScalar
-        };
+        return xAxisProperties;
     }
 
-    public static render(settings: VisualSettings, xAxisSvgGroup: d3Selection<SVGElement>, yAxisSvgGroup: d3Selection<SVGElement>, axes: IAxes, maxYLabelsWidth = null) {
+    public static render(settings: VisualSettings, xAxisSvgGroup: d3Selection<SVGElement>, yAxisSvgGroup: d3Selection<SVGElement>, axes: IAxes) {
         // Before rendering an axis, we need to remove an old one.
         // Otherwise, our visual will be cluttered by multiple axis objects, which can
         // // affect performance of our visual.
@@ -206,18 +200,18 @@ export class RenderAxes {
         // Now we call the axis funciton, that will render an axis on our visual.
         if (settings.valueAxis.show) {
             xAxisSvgGroup.call(axes.x.axis);
-            let axisText = xAxisSvgGroup.selectAll("g").selectAll("text");
-            let axisLines = xAxisSvgGroup.selectAll("g").selectAll("line");
+            const axisText = xAxisSvgGroup.selectAll("g").selectAll("text");
+            const axisLines = xAxisSvgGroup.selectAll("g").selectAll("line");
 
-            let color: string = settings.valueAxis.axisColor.toString();
-            let fontSize: string = PixelConverter.toString(settings.valueAxis.fontSize);
-            let fontFamily: string = settings.valueAxis.fontFamily;
-            let gridlinesColor: string = settings.valueAxis.gridlinesColor.toString();
-            let strokeWidth: string = PixelConverter.toString(settings.valueAxis.strokeWidth);
-            let showGridlines: DataViewPropertyValue = settings.valueAxis.showGridlines;
-            let lineStyle: DataViewPropertyValue = settings.valueAxis.lineStyle;
+            const color: string = settings.valueAxis.axisColor.toString();
+            const fontSize: string = PixelConverter.toString(settings.valueAxis.fontSize);
+            const fontFamily: string = settings.valueAxis.fontFamily;
+            const gridlinesColor: string = settings.valueAxis.gridlinesColor.toString();
+            const strokeWidth: string = PixelConverter.toString(settings.valueAxis.strokeWidth);
+            const showGridlines: DataViewPropertyValue = settings.valueAxis.showGridlines;
+            const lineStyle: DataViewPropertyValue = settings.valueAxis.lineStyle;
 
-            let strokeDasharray = getLineStyleParam(lineStyle);
+            const strokeDasharray = getLineStyleParam(lineStyle);
 
             axisText.style(
                 "fill", color,
@@ -251,11 +245,11 @@ export class RenderAxes {
 
         if (settings.categoryAxis.show) {
             yAxisSvgGroup.call(axes.y.axis);
-            let axisText = yAxisSvgGroup.selectAll("g").selectAll("text");
+            const axisText = yAxisSvgGroup.selectAll("g").selectAll("text");
 
-            let color: string = settings.categoryAxis.axisColor.toString();
-            let fontSize: string = PixelConverter.toString(settings.categoryAxis.fontSize);
-            let fontFamily: string = settings.categoryAxis.fontFamily;
+            const color: string = settings.categoryAxis.axisColor.toString();
+            const fontSize: string = PixelConverter.toString(settings.categoryAxis.fontSize);
+            const fontFamily: string = settings.categoryAxis.fontFamily;
 
             axisText.style(
                 "fill", color,
@@ -285,20 +279,17 @@ export class RenderAxes {
         axes: IAxes,
         axisLabelsGroup: d3Update<string>,
         axisGraphicsContext: d3Selection<SVGElement>) {
-
         const margin: IMargin = visualMargin,
             width: number = viewport.width,
             height: number = viewport.height,
             yAxisOrientation: string = HorizontalPosition.Right,
             showY1OnRight: boolean = yAxisOrientation === settings.categoryAxis.position;
-
-        let showYAxisTitle: boolean = settings.categoryAxis.show && settings.categoryAxis.showTitle;
-        let showXAxisTitle: boolean = settings.valueAxis.show && settings.valueAxis.showTitle;
+        const showYAxisTitle: boolean = settings.categoryAxis.show && settings.categoryAxis.showTitle;
+        const showXAxisTitle: boolean = settings.valueAxis.show && settings.valueAxis.showTitle;
         
         if (!showXAxisTitle) {
             axisLabelsData[0] = null;
         }
-
         if (!showYAxisTitle) {
             axisLabelsData[1] = null;
         }
@@ -315,79 +306,59 @@ export class RenderAxes {
             .append("text")
             .attr("class", Selectors.AxisLabelSelector.className);
 
-        let xColor: string = settings.valueAxis.axisTitleColor;
-        let xFontSize: number = parseInt(settings.valueAxis.titleFontSize.toString());
-        let xFontSizeString: string = PixelConverter.toString(xFontSize);
-        let xTitle: DataViewPropertyValue = settings.valueAxis.axisTitle;
-        let xAxisStyle: DataViewPropertyValue = settings.valueAxis.titleStyle;
-        let xAxisFontFamily: string = settings.valueAxis.titleFontFamily;
-
-        let yColor: string = settings.categoryAxis.axisTitleColor;
-        let yFontSize: number = parseInt(settings.categoryAxis.titleFontSize.toString());
-        let yFontSizeString: string = PixelConverter.toString(yFontSize);
-        let yTitle: DataViewPropertyValue = settings.categoryAxis.axisTitle;
-        let yAxisStyle: DataViewPropertyValue = settings.categoryAxis.titleStyle;
-        let yAxisFontFamily: string = settings.categoryAxis.titleFontFamily;
+        const xColor: string = settings.valueAxis.axisTitleColor;
+        const xFontSize: number = parseInt(settings.valueAxis.titleFontSize.toString());
+        const xFontSizeString: string = PixelConverter.toString(xFontSize);
+        const xTitle: DataViewPropertyValue = settings.valueAxis.axisTitle;
+        const xAxisStyle: DataViewPropertyValue = settings.valueAxis.titleStyle;
+        const xAxisFontFamily: string = settings.valueAxis.titleFontFamily;
+        const yColor: string = settings.categoryAxis.axisTitleColor;
+        const yFontSize: number = parseInt(settings.categoryAxis.titleFontSize.toString());
+        const yFontSizeString: string = PixelConverter.toString(yFontSize);
+        const yTitle: DataViewPropertyValue = settings.categoryAxis.axisTitle;
+        const yAxisStyle: DataViewPropertyValue = settings.categoryAxis.titleStyle;
+        const yAxisFontFamily: string = settings.categoryAxis.titleFontFamily;
 
         axisLabelsGroup
             .merge(axisLabelsGroupEnter)
-            .style( "text-anchor", "middle" )
+            .style("text-anchor", "middle")
             .text(d => d)
             .call((text: d3Selection<any>) => {
                 const textSelectionX: d3Selection<any> = select(text.nodes()[0]);
-
                 textSelectionX.attr(
                     "transform", svg.translate(
                         (width) / RenderAxes.AxisLabelOffset,
                         (height + visualSize.height + xFontSize + margin.top) / 2),
                 )
-                .attr(
-                    "dy", '.8em'
-                );
-
+                    .attr(
+                        "dy", '.8em'
+                    );
                 if (showXAxisTitle && xTitle && xTitle.toString().length > 0) {
                     textSelectionX.text(xTitle as string);
                 }
-
                 if (showXAxisTitle && xAxisStyle) {
-                    let newTitle: string = getTitleWithUnitType(textSelectionX.text(), xAxisStyle, axes.x);
-
+                    const newTitle: string = getTitleWithUnitType(textSelectionX.text(), xAxisStyle, axes.x);
                     textSelectionX.text(newTitle);
                 }
 
-                textSelectionX.style(
-                    "fill", xColor,
-                )
-                .style(
-                    "font-size", xFontSizeString,
-                )
-                .style(
-                    "font-family", xAxisFontFamily
-                );
+                textSelectionX
+                    .style("fill", xColor)
+                    .style("font-size", xFontSizeString)
+                    .style("font-family", xAxisFontFamily);
 
                 const textSelectionY: d3Selection<any> = select(text.nodes()[1]);
-
-                textSelectionY.attr(
-                    "transform", showY1OnRight ? RenderAxes.YAxisLabelTransformRotate : RenderAxes.YAxisLabelTransformRotate,
-                )
-                .attr(
-                    "y", showY1OnRight
-                        ? width - margin.right - yFontSize
-                        : 0,
-                )
-                .attr(
-                    "x", -((visualSize.height + margin.top + margin.bottom) / RenderAxes.AxisLabelOffset),
-                )
-                .attr(
-                    "dy", (showY1OnRight ? '-' : '') + RenderAxes.DefaultDY
-                );
+                textSelectionY
+                    .attr("transform", showY1OnRight ? RenderAxes.YAxisLabelTransformRotate : RenderAxes.YAxisLabelTransformRotate)
+                    .attr( "y", showY1OnRight ? width - margin.right - yFontSize : 0)
+                    .attr("x", -((visualSize.height + margin.top + margin.bottom) / RenderAxes.AxisLabelOffset))
+                    .attr("dy", (showY1OnRight ? '-' : '') + RenderAxes.DefaultDY);
 
                 if (showYAxisTitle && yTitle && yTitle.toString().length > 0) {
                     textSelectionY.text(yTitle as string);
                 }
 
                 if (showYAxisTitle && settings.categoryAxis.showTitle) {
-                    let newTitle: string = getTitleWithUnitType(textSelectionY.text(), yAxisStyle, axes.y);
+                    const newTitle: string = getTitleWithUnitType(textSelectionY.text(), yAxisStyle, axes.y);
 
                     textSelectionY.text(newTitle);
                 }
@@ -395,12 +366,12 @@ export class RenderAxes {
                 textSelectionY.style(
                     "fill", yColor,
                 )
-                .style(
-                    "font-size", yFontSizeString,
-                )
-                .style(
-                    "font-family", yAxisFontFamily
-                );
+                    .style(
+                        "font-size", yFontSizeString,
+                    )
+                    .style(
+                        "font-family", yAxisFontFamily
+                    );
             });
     }
 
@@ -430,7 +401,7 @@ export class RenderAxes {
         let dataDomainMinX: number = minValue;
         let dataDomainMaxX: number = maxValue;
 
-        let constantLineValue: number = settings.constantLine.value;
+        const constantLineValue: number = settings.constantLine.value;
 
         if (constantLineValue || constantLineValue === 0) {
             dataDomainMinX = dataDomainMinX > constantLineValue ? constantLineValue : dataDomainMinX;
@@ -439,8 +410,8 @@ export class RenderAxes {
 
         const skipStartEnd: boolean = isSmallMultiple && settings.valueAxis.rangeType !== AxisRangeType.Custom;
 
-        let start = skipStartEnd ? null : settings.valueAxis.start;
-        let end = skipStartEnd ? null : settings.valueAxis.end;
+        const start = skipStartEnd ? null : settings.valueAxis.start;
+        const end = skipStartEnd ? null : settings.valueAxis.end;
 
         if (start != null){
             dataDomainMinX = start;
@@ -461,24 +432,24 @@ export class RenderAxes {
         isSmallMultiple: boolean = false): any[] { 
         
         const categoryType: valueType.ValueType = axis.getCategoryValueType(metadata.cols.category);
-        let isOrdinal: boolean = axis.isOrdinal(categoryType);
+        const isOrdinal: boolean = axis.isOrdinal(categoryType);
 
         let dataDomainY = visibleDatapoints.map(d => <any>d.category);
 
-        let yIsScalar: boolean = !isOrdinal;
-        let axisType: string = !yIsScalar ? "categorical" : settings.categoryAxis.axisType;
+        const yIsScalar: boolean = !isOrdinal;
+        const axisType: string = !yIsScalar ? "categorical" : settings.categoryAxis.axisType;
 
         if (yIsScalar && axisType === "continuous") {
             dataDomainY = dataDomainY.filter(d => d !== this.Blank);
             const noBlankCategoryDatapoints: VisualDataPoint[] = visibleDatapoints.filter(d => d.category !== this.Blank);
 
-            let dataDomainMinY: number = min(noBlankCategoryDatapoints, d => <number>d.category);
-            let dataDomainMaxY: number = max(noBlankCategoryDatapoints, d => <number>d.category);
+            const dataDomainMinY: number = min(noBlankCategoryDatapoints, d => <number>d.category);
+            const dataDomainMaxY: number = max(noBlankCategoryDatapoints, d => <number>d.category);
 
             const skipStartEnd: boolean = isSmallMultiple && settings.categoryAxis.rangeType !== AxisRangeType.Custom;
 
-            let start = skipStartEnd ? null : settings.categoryAxis.start;
-            let end = skipStartEnd ? null : settings.categoryAxis.end;
+            const start = skipStartEnd ? null : settings.categoryAxis.start;
+            const end = skipStartEnd ? null : settings.categoryAxis.end;
 
             dataDomainY = [start != null ? settings.categoryAxis.start : dataDomainMinY, end != null ? end : dataDomainMaxY];
         }

@@ -32,8 +32,8 @@ import { IAxisProperties } from "powerbi-visuals-utils-chartutils/lib/axis/axisI
 import { max, min } from 'd3-array';
 
 export function calculateBarCoordianatesByData(data: VisualData, settings: VisualSettings, barHeight: number, isSmallMultiple: boolean = false): void {
-    let dataPoints: VisualDataPoint[] = data.dataPoints;
-    let axes: IAxes = data.axes;
+    const dataPoints: VisualDataPoint[] = data.dataPoints;
+    const axes: IAxes = data.axes;
 
     this.calculateBarCoordianates(dataPoints, axes, settings, barHeight, isSmallMultiple);
 }
@@ -45,7 +45,7 @@ export function calculateBarCoordianates(dataPoints: VisualDataPoint[], axes: IA
         skipValueStartEnd: boolean = isSmallMultiple && settings.valueAxis.rangeType !== AxisRangeType.Custom;
 
     dataPoints.forEach(point => {
-        let height, width, x, y: number;
+        let height, width, x: number;
 
         if (!axes.yIsScalar || isCategoricalAxisType) {
             height = axes.y.scale.bandwidth();
@@ -53,15 +53,15 @@ export function calculateBarCoordianates(dataPoints: VisualDataPoint[], axes: IA
             height = dataPoints.length > 2 ? barHeight : barHeight / 2;
         }
 
-        let xValue = point.shiftValue < axes.x.dataDomain[0] ? axes.x.dataDomain[0] : point.shiftValue;
+        const xValue = point.shiftValue < axes.x.dataDomain[0] ? axes.x.dataDomain[0] : point.shiftValue;
         if (xValue) {
             x = axes.x.scale(xValue);
         } else {
-            let xValue = axes.x.dataDomain[0] > 0 ? axes.x.dataDomain[0] : 0;
+            const xValue = axes.x.dataDomain[0] > 0 ? axes.x.dataDomain[0] : 0;
             x = axes.x.scale(xValue);
         }
 
-        let widthValue: number = point.percentValueForWidth as number;
+        const widthValue: number = point.percentValueForWidth as number;
         if (point.shiftValue > axes.x.dataDomain[1]) {
             width = 0;
         } else if (point.shiftValue + widthValue < axes.x.dataDomain[0]) {
@@ -69,13 +69,13 @@ export function calculateBarCoordianates(dataPoints: VisualDataPoint[], axes: IA
         } else if (axes.x.scale(widthValue + point.shiftValue) < 0) {
             width = 1;
         } else {
-            let end = skipValueStartEnd ? null : settings.valueAxis.end;
-            let valueToScale = widthValue + point.shiftValue;
+            const end = skipValueStartEnd ? null : settings.valueAxis.end;
+            const valueToScale = widthValue + point.shiftValue;
 
             width = axes.x.scale(end != null && valueToScale > end ? end : valueToScale) - axes.x.scale(xValue);
         }
 
-        y = axes.y.scale(point.category);
+        const y = axes.y.scale(point.category);
 
         point.barCoordinates = {
             height: height,
@@ -94,34 +94,32 @@ export function recalculateHeightForContinuous(dataPoints: VisualDataPoint[], sk
     let minHeight: number = 1.5,
         minDistance: number = Number.MAX_VALUE;
 
-    let start = skipCategoryStartEnd ? null : categorySettings.start,
+    const start = skipCategoryStartEnd ? null : categorySettings.start,
         end = skipCategoryStartEnd ? null : categorySettings.end;
 
-    let dataPointsSorted: VisualDataPoint[] = dataPoints.sort((a, b) => {
+    const dataPointsSorted: VisualDataPoint[] = dataPoints.sort((a, b) => {
         return a.barCoordinates.y - b.barCoordinates.y;
     });
 
-    let sortedBarCoordinates: number[] = dataPointsSorted.map(d => d.barCoordinates.y).filter((v, i, a) => a.indexOf(v) === i);
+    const sortedBarCoordinates: number[] = dataPointsSorted.map(d => d.barCoordinates.y).filter((v, i, a) => a.indexOf(v) === i);
 
     let firstCoodinate: number = sortedBarCoordinates[0];
 
     for (let i = 1; i < sortedBarCoordinates.length; ++i) {
-        let distance: number = sortedBarCoordinates[i] - firstCoodinate;
+        const distance: number = sortedBarCoordinates[i] - firstCoodinate;
 
         minDistance = distance < minDistance ? distance : minDistance;
         firstCoodinate = sortedBarCoordinates[i];
     }
 
-    if (minDistance < minHeight) {
-
-    } else if (minHeight < minDistance) {
+    if (minHeight < minDistance) {
         minHeight = minDistance;
     }
 
     dataPointsSorted.forEach(d => {
         let height: number = 0;
         if (startHeight > minHeight) {
-            let padding: number = minHeight / 100 * 20;
+            const padding: number = minHeight / 100 * 20;
             height = minHeight - padding;
         } else {
             height = d.barCoordinates.height;
@@ -136,7 +134,7 @@ export function recalculateHeightForContinuous(dataPoints: VisualDataPoint[], sk
 }
 
 export function buildDataPointsByCategoriesArray(dataPoints: VisualDataPoint[]): CategoryDataPoints[] {
-    let dataPointsByCategories: CategoryDataPoints[] = [];
+    const dataPointsByCategories: CategoryDataPoints[] = [];
     let categoryIndex: number = 0;
     let categoryName: string = '';
     let previousCategoryName: string = '';
@@ -154,7 +152,7 @@ export function buildDataPointsByCategoriesArray(dataPoints: VisualDataPoint[]):
         }
 
         if (!dataPointsByCategories[categoryIndex]) {
-            let category: CategoryDataPoints = {
+            const category: CategoryDataPoints = {
                 categoryName,
                 dataPoints: []
             };
@@ -176,9 +174,9 @@ export function calculateLabelCoordinates(data: VisualData,
         return;
     }
 
-    let dataPointsArray: VisualDataPoint[] = dataPoints || data.dataPoints;
+    const dataPointsArray: VisualDataPoint[] = dataPoints || data.dataPoints;
 
-    let precision: number = settings.precision;
+    const precision: number = settings.precision;
 
     let precisionZeros: string = "";
 
@@ -186,26 +184,26 @@ export function calculateLabelCoordinates(data: VisualData,
         precisionZeros += "0";
     }
 
-    let dataLabelFormatter: IValueFormatter = ValueFormatter.create({
+    const dataLabelFormatter: IValueFormatter = ValueFormatter.create({
         precision: precision,
         format: `0.${precisionZeros}%;-0.${precisionZeros}%;0.${precisionZeros}%`
         });
 
-    let textPropertiesForWidth: TextProperties = formattingUtils.getTextProperties(settings);
-    let textPropertiesForHeight: TextProperties = formattingUtils.getTextPropertiesForHeightCalculation(settings);
+    const textPropertiesForWidth: TextProperties = formattingUtils.getTextProperties(settings);
+    const textPropertiesForHeight: TextProperties = formattingUtils.getTextPropertiesForHeightCalculation(settings);
 
     dataPointsArray.forEach(dataPoint => {
-        let formattedText: string = dataLabelFormatter.format(dataPoint.percentValue);
+        const formattedText: string = dataLabelFormatter.format(dataPoint.percentValue);
         textPropertiesForHeight.text = formattedText;
 
-        let textWidth: number = TextMeasurementService.measureSvgTextWidth(textPropertiesForWidth, formattedText);
-        let textHeight: number = TextMeasurementService.estimateSvgTextHeight(textPropertiesForHeight);
+        const textWidth: number = TextMeasurementService.measureSvgTextWidth(textPropertiesForWidth, formattedText);
+        const textHeight: number = TextMeasurementService.estimateSvgTextHeight(textPropertiesForHeight);
 
-        let barHeight: number = dataPoint.barCoordinates.height;
+        const barHeight: number = dataPoint.barCoordinates.height;
 
         if (settings.overflowText || textHeight +
             (settings.showBackground ? DataLabelHelper.labelBackgroundHeightPadding : 0) < barHeight) {
-            let dy: number = dataPoint.barCoordinates.y + dataPoint.barCoordinates.height / 2 + (textHeight - 3) / 2,
+            const dy: number = dataPoint.barCoordinates.y + dataPoint.barCoordinates.height / 2 + (textHeight - 3) / 2,
             dx: number = DataLabelHelper.calculatePositionShift(settings, textWidth, dataPoint, chartWidth, isLegendRendered);
 
             if (dx !== null) {
@@ -228,7 +226,7 @@ export function getNumberOfValues(dataView: DataView): number {
     const columns: DataViewMetadataColumn[] = dataView.metadata.columns;
     let valueFieldsCount: number = 0;
 
-    for (let columnName in columns) {
+    for (const columnName in columns) {
         const column: DataViewMetadataColumn = columns[columnName];
 
         if (column.roles && column.roles[Field.Value]) {
@@ -269,7 +267,7 @@ export function getUnitType(xAxis: IAxisProperties): string {
 }
 
 export function getTitleWithUnitType(title, axisStyle, axis: IAxisProperties): string {
-    let unitTitle = visualUtils.getUnitType(axis) || "No unit";
+    const unitTitle = visualUtils.getUnitType(axis) || "No unit";
     switch (axisStyle) {
         case "showUnitOnly": {
             return unitTitle;
@@ -305,18 +303,18 @@ export function calculateBarHeight(
     settings: VisualSettings,
     isSmallMultiple: boolean = false): number {
 
-    let currentBarHeight = visualSize.height / categoriesCount;
+    const currentBarHeight = visualSize.height / categoriesCount;
     let barHeight: number = 0;
 
     if (settings.categoryAxis.axisType === "categorical") {
-        let innerPadding: number = categoryInnerPadding / 100;
+        const innerPadding: number = categoryInnerPadding / 100;
         barHeight = min([CategoryMaxHeight, max([CategoryMinHeight, currentBarHeight])]) * (1 - innerPadding);
     } else {
         let dataPoints = [...visualDataPoints];
 
         const skipStartEnd: boolean = isSmallMultiple && settings.categoryAxis.rangeType !== AxisRangeType.Custom;
 
-        let start = skipStartEnd ? null : settings.categoryAxis.start,
+        const start = skipStartEnd ? null : settings.categoryAxis.start,
             end = skipStartEnd ? null : settings.categoryAxis.end;
 
         if (start != null || end != null) {
@@ -324,13 +322,13 @@ export function calculateBarHeight(
                                             &&  end != null ? x.value <= end : true)
         }
 
-        let dataPointsCount: number = dataPoints.map(x => x.category).filter((v, i, a) => a.indexOf(v) === i).length;
+        const dataPointsCount: number = dataPoints.map(x => x.category).filter((v, i, a) => a.indexOf(v) === i).length;
 
         if (dataPointsCount < 4) {
-            let devider: number = 3.75;
+            const devider: number = 3.75;
             barHeight = visualSize.height / devider;
         } else {
-            let devider: number = 3.75 + 1.25 * (dataPointsCount - 3); 
+            const devider: number = 3.75 + 1.25 * (dataPointsCount - 3); 
             barHeight = visualSize.height / devider;
         }
     }
@@ -343,10 +341,10 @@ export function getLabelsMaxWidth(group: d3Selection<any> | undefined): number {
 
     if (group) {
         group.nodes().forEach((item: any) => {
-            let dimension: ClientRect = item.getBoundingClientRect();
+            const dimension: ClientRect = item.getBoundingClientRect();
             widths.push(max([dimension.width, dimension.height]));
         })
-    };
+    }
 
     if (!group || group.size() === 0) {
         widths.push(0);
@@ -360,7 +358,7 @@ export function getLabelsMaxHeight(group: d3Group<any> | undefined): number {
 
     if (group) {
         group.nodes().forEach((item: any) => {
-            let dimension: ClientRect = item.getBoundingClientRect();
+            const dimension: ClientRect = item.getBoundingClientRect();
             heights.push(dimension.height);
         });
     }
@@ -374,7 +372,7 @@ export function getLabelsMaxHeight(group: d3Group<any> | undefined): number {
 
 export function GetYAxisTitleThickness(valueSettings: valueAxisSettings): number {
 
-    let textPropertiesForHeight: TextProperties = {
+    const textPropertiesForHeight: TextProperties = {
         fontFamily: valueSettings.titleFontFamily,
         fontSize: valueSettings.titleFontSize.toString()
     };
@@ -384,7 +382,7 @@ export function GetYAxisTitleThickness(valueSettings: valueAxisSettings): number
 
 export function GetXAxisTitleThickness(categorySettings: categoryAxisSettings): number {
 
-    let textPropertiesForHeight: TextProperties = {
+    const textPropertiesForHeight: TextProperties = {
         fontFamily: categorySettings.titleFontFamily,
         fontSize: categorySettings.titleFontSize.toString()
     };
@@ -417,7 +415,7 @@ export function compareObjects(obj1: any[], obj2: any[], property: string): bool
 
 export function categoryIsScalar(metadata: VisualMeasureMetadata): boolean {
     const categoryType: valueType.ValueType = axis.getCategoryValueType(metadata.cols.category);
-    let isOrdinal: boolean = axis.isOrdinal(categoryType);
+    const isOrdinal: boolean = axis.isOrdinal(categoryType);
 
     return !isOrdinal;
 }

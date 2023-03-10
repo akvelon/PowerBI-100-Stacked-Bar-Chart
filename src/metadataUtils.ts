@@ -1,3 +1,5 @@
+"use strict";
+
 import powerbiApi from "powerbi-visuals-api";
 import { VisualMeasureMetadata } from "./visualInterfaces";
 

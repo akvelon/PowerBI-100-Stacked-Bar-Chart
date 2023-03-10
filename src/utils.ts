@@ -1,3 +1,4 @@
+"use strict";
 
 import { Selection } from 'd3-selection';
 import { AxisRangeType, categoryAxisSettings, categoryLabelsSettings, valueAxisSettings, VisualSettings } from "./settings";
@@ -9,7 +10,6 @@ export type d3Group<T> = Selection<any, T, any, any>;
 import powerbiApi from "powerbi-visuals-api";
 import DataViewMetadataColumn = powerbiApi.DataViewMetadataColumn;
 import DataView = powerbiApi.DataView;
-
 
 import { axis } from "powerbi-visuals-utils-chartutils";
 

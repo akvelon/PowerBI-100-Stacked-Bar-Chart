@@ -1,28 +1,4 @@
-/*
-*  Power BI Visual CLI
-*
-*  All rights reserved.
-*  Copyright (c) Microsoft Corporation
-*  MIT License
-*
-*  Permission is hereby granted, free of charge, to any person obtaining a copy
-*  of this software and associated documentation files (the ""Software""), to deal
-*  in the Software without restriction, including without limitation the rights
-*  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-*  copies of the Software, and to permit persons to whom the Software is
-*  furnished to do so, subject to the following conditions:
-*
-*  The above copyright notice and this permission notice shall be included in
-*  all copies or substantial portions of the Software.
-*
-*  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-*  THE SOFTWARE.
-*/
+"use strict";
 
 import powerbiApi from "powerbi-visuals-api";
 import DataView = powerbiApi.DataView;
@@ -36,7 +12,6 @@ import IViewport = powerbiApi.IViewport;
 import VisualUpdateOptions = powerbiApi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbiApi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateType = powerbiApi.VisualUpdateType;
-
 import VisualObjectInstanceEnumeration = powerbiApi.VisualObjectInstanceEnumeration;
 import VisualObjectInstanceEnumerationObject = powerbiApi.VisualObjectInstanceEnumerationObject;
 import VisualObjectInstance = powerbiApi.VisualObjectInstance;
@@ -45,19 +20,17 @@ import EnumerateVisualObjectInstancesOptions = powerbiApi.EnumerateVisualObjectI
 import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
 import IInteractivityService = interactivityBaseService.IInteractivityService;
 import ISelectionHandler = interactivityBaseService.ISelectionHandler;
+import createInteractivityService = interactivitySelectionService.createInteractivitySelectionService;
+import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+
 import { RenderVisual } from "./render/renderVisual";
 import { RenderAxes } from "./render/renderAxes";
-
-
-import createInteractivityService = interactivitySelectionService.createInteractivitySelectionService;
-
 import { axis } from "powerbi-visuals-utils-chartutils";
 import { valueType } from "powerbi-visuals-utils-typeutils";
 
 import { textMeasurementService as TextMeasurementService, interfaces, valueFormatter as ValueFormatter} from "powerbi-visuals-utils-formattingutils";
 import TextProperties = interfaces.TextProperties;
 import IValueFormatter = ValueFormatter.IValueFormatter;
-
 
 import * as visualUtils from "./utils";
 import * as scrollbarUtil from "./scrollbarUtil";
@@ -68,38 +41,27 @@ import * as lassoSelectionUtil from "./lassoSelectionUtil";
 import * as selectionSaveUtils from "./selectionSaveUtils";
 import { WebBehavior, WebBehaviorOptions } from "./behavior"
 
+import ScrollbarState = scrollbarUtil.ScrollbarState;
+
 import { CssConstants, IMargin, manipulation as svg } from "powerbi-visuals-utils-svgutils";
 
 import * as d3 from 'd3-selection';
-import { d3Selection as d3Selection, d3Update as d3Update, d3Group as d3Group } from "./utils";
+import { d3Selection as d3Selection, d3Update as d3Update } from "./utils";
 
 import "../style/visual.less";
 
-"use strict";
-// import svg = powerbi.extensibility.utils.svg;
-// import CssConstants = svg.CssConstants;
-// import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
-// import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
-// import createInteractivityService = powerbi.extensibility.utils.interactivity.createInteractivityService;
-// import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
-// import createTooltipServiceWrapper = powerbi.extensibility.utils.tooltip.createTooltipServiceWrapper;    
-// import PixelConverter = powerbi.extensibility.utils.type.PixelConverter;
-// import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
-// import axis = powerbi.extensibility.utils.chart.axis;
-// import valueType = powerbi.extensibility.utils.type.ValueType;
-import ScrollbarState = scrollbarUtil.ScrollbarState;    
-// import TextProperties = powerbi.extensibility.utils.formatting.TextProperties;
-// import IValueFormatter = powerbi.extensibility.utils.formatting.IValueFormatter;
-
-// powerbi.extensibility.utils.type
-// import ILegend = powerbi.extensibility.utils.chart.legend.ILegend;
-// import createLegend = powerbi.extensibility.utils.chart.legend.createLegend;
 import { AxisRangeType, HorizontalPosition, LayoutMode, legendSettings, smallMultipleSettings, VisualSettings } from "./settings";
 import { AxesDomains, CategoryDataPoints, IAxes, IAxesSize, ISize, LegendProperties, LegendSize, SmallMultipleSizeOptions, VisualData, VisualDataPoint, VisualMeasureMetadata, VisualTranslation } from "./visualInterfaces";
 
 import { CustomLegendBehavior } from "./customLegendBehavior";
-import { ILegend, LegendDataPoint } from "powerbi-visuals-utils-chartutils/lib/legend/legendInterfaces";
-import { createLegend } from "powerbi-visuals-utils-chartutils/lib/legend/legend";
+
+import { legendInterfaces } from "powerbi-visuals-utils-chartutils";
+import ILegend = legendInterfaces.ILegend;
+import LegendDataPoint = legendInterfaces.LegendDataPoint;
+
+import { legend } from "powerbi-visuals-utils-chartutils";
+import createLegend = legend.createLegend;
+
 import { DataViewConverter, Field } from "./dataViewConverter";
 import { EnumerateObject } from "./enumerateObject";
 import { ITooltipServiceWrapper, createTooltipServiceWrapper } from "powerbi-visuals-utils-tooltiputils";
@@ -107,7 +69,6 @@ import { ITooltipServiceWrapper, createTooltipServiceWrapper } from "powerbi-vis
 import { pixelConverter as PixelConverter} from "powerbi-visuals-utils-typeutils";
 
 import { LassoSelectionForSmallMultiple } from "./lassoSelectionUtilForSmallMultiple";
-import { IInteractiveBehavior } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
 
 namespace Selectors {
     export const MainSvg = CssConstants.createClassAndSelector("bar-chart-svg");

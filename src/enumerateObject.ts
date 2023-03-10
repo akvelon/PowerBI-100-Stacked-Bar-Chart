@@ -1,4 +1,4 @@
-import { VisualData, VisualDataPoint } from "./visualInterfaces";
+"use strict";
 
 import powerbiApi from "powerbi-visuals-api";
 import VisualObjectInstance = powerbiApi.VisualObjectInstance
@@ -11,6 +11,7 @@ import { legendInterfaces } from "powerbi-visuals-utils-chartutils";
 import LegendDataPoint = legendInterfaces.LegendDataPoint;
 
 import { AxisRangeType, LayoutMode, VisualSettings } from "./settings";
+import { VisualData, VisualDataPoint } from "./visualInterfaces";
 
 export class EnumerateObject {
     private static fillDataPointInstancesForLegend(visualData: VisualData, instances: VisualObjectInstance[]) {

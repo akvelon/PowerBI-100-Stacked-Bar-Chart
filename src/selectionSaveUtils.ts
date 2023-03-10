@@ -1,3 +1,5 @@
+"use strict";
+
 import powerbiApi from "powerbi-visuals-api";
 import { VisualDataPoint } from "./visualInterfaces";
 import VisualObjectInstance = powerbiApi.VisualObjectInstance;

@@ -1,12 +1,13 @@
-import { d3Selection as d3Selection, DefaultOpacity, DimmedOpacity } from "./utils";
+"use strict";
 
 import powerbiApi from "powerbi-visuals-api";
 import DataView = powerbiApi.DataView;
 
-import { CategoryDataPoints, IBarVisual, SelectionState, VisualDataPoint } from "./visualInterfaces";
-
 import * as d3 from 'd3-selection';
+
+import { CategoryDataPoints, IBarVisual, SelectionState, VisualDataPoint } from "./visualInterfaces";
 import { DataViewConverter } from "./dataViewConverter";
+import { d3Selection as d3Selection, DefaultOpacity, DimmedOpacity } from "./utils";
 
 /*
     undefined, null - no selection

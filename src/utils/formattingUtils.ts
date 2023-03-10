@@ -1,12 +1,12 @@
+"use strict";
+
 import powerbiApi from "powerbi-visuals-api";
 import { categoryLabelsSettings } from "../settings";
 import { VisualData } from "../visualInterfaces";
 import DataViewMetadataColumn = powerbiApi.DataViewMetadataColumn;
 
-
-import { textMeasurementService as TextMeasurementService, interfaces, valueFormatter as ValueFormatter} from "powerbi-visuals-utils-formattingutils";
+import { interfaces, valueFormatter as ValueFormatter} from "powerbi-visuals-utils-formattingutils";
 import TextProperties = interfaces.TextProperties;
-
 
 import { pixelConverter as PixelConverter} from "powerbi-visuals-utils-typeutils";
 

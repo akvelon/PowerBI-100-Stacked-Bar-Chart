@@ -1,16 +1,14 @@
-import { IMargin } from "powerbi-visuals-utils-svgutils";
+"use strict";
 
-import { d3Selection as d3Selection } from "./utils";
+import { IMargin } from "powerbi-visuals-utils-svgutils";
 
 import { select } from "d3-selection";
 
 import powerbiApi from "powerbi-visuals-api";
 import VisualUpdateType = powerbiApi.VisualUpdateType;
 
-type ScrollBarAction = 'disable';
-
-
 import { CategoryDataPoints, IBarVisual, VisualDataPoint } from "./visualInterfaces";
+import { d3Selection as d3Selection } from "./utils";
 
 export enum ScrollbarState {
     Disable = <any>"disable",

@@ -1,6 +1,8 @@
+"use strict";
+
 import { axisLeft, axisBottom, Axis, axisRight, axisTop } from "d3-axis";
 import { ScaleLinear } from "d3-scale";
-import { axis, axisScale } from "powerbi-visuals-utils-chartutils";
+import { axisScale } from "powerbi-visuals-utils-chartutils";
 import {
   createFormatter,
   createScale,
@@ -19,10 +21,10 @@ import {
 import { IValueFormatter } from "powerbi-visuals-utils-formattingutils/lib/src/valueFormatter";
 
 import { valueType } from "powerbi-visuals-utils-typeutils";
-import { HorizontalPosition, VerticalPosition } from "../../settings";
+import { HorizontalPosition, VerticalPosition, VisualSettings } from "../../settings";
 import ValueType = valueType.ValueType;
 
-export const getYAxisMaxWidth = (visualWidth, settings) =>
+export const getYAxisMaxWidth = (visualWidth: number, settings: VisualSettings) =>
   (visualWidth / 100) * settings.categoryAxis.maximumSize;
 
 const TickLabelPadding: number = 2;

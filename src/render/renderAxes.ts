@@ -1,3 +1,5 @@
+"use strict";
+
 import { pixelConverter as PixelConverter} from "powerbi-visuals-utils-typeutils";
 
 import { CssConstants, manipulation as svg } from "powerbi-visuals-utils-svgutils";
@@ -9,12 +11,13 @@ import IViewport = powerbiApi.IViewport;
 
 import { AxesDomains, IAxes, ISize, VisualDataPoint, VisualMeasureMetadata } from "../visualInterfaces";
 import { AxisRangeType, HorizontalPosition, VisualSettings } from "../settings";
-import { d3Selection, d3Update } from "../utils";
-import * as visualUtils from "../utils";
-import { AxisOrientation, IMargin } from "powerbi-visuals-utils-chartutils/lib/axis/axisInterfaces";
+import { d3Selection, d3Update, getLineStyleParam, getTitleWithUnitType } from "../utils";
 
+import { axisInterfaces } from "powerbi-visuals-utils-chartutils";
+import AxisOrientation = axisInterfaces.AxisOrientation;
+import IMargin = axisInterfaces.IMargin;
 
-import { select } from "d3";
+import { select } from "d3-selection";
 import { max, min } from "d3-array";
 import { axis } from "powerbi-visuals-utils-chartutils";
 
@@ -214,7 +217,7 @@ export class RenderAxes {
             let showGridlines: DataViewPropertyValue = settings.valueAxis.showGridlines;
             let lineStyle: DataViewPropertyValue = settings.valueAxis.lineStyle;
 
-            let strokeDasharray = visualUtils.getLineStyleParam(lineStyle);
+            let strokeDasharray = getLineStyleParam(lineStyle);
 
             axisText.style(
                 "fill", color,
@@ -347,7 +350,7 @@ export class RenderAxes {
                 }
 
                 if (showXAxisTitle && xAxisStyle) {
-                    let newTitle: string = visualUtils.getTitleWithUnitType(textSelectionX.text(), xAxisStyle, axes.x);
+                    let newTitle: string = getTitleWithUnitType(textSelectionX.text(), xAxisStyle, axes.x);
 
                     textSelectionX.text(newTitle);
                 }
@@ -384,7 +387,7 @@ export class RenderAxes {
                 }
 
                 if (showYAxisTitle && settings.categoryAxis.showTitle) {
-                    let newTitle: string = visualUtils.getTitleWithUnitType(textSelectionY.text(), yAxisStyle, axes.y);
+                    let newTitle: string = getTitleWithUnitType(textSelectionY.text(), yAxisStyle, axes.y);
 
                     textSelectionY.text(newTitle);
                 }

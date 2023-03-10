@@ -1,4 +1,5 @@
-import {  } from "powerbi-visuals-utils-svgutils"
+"use strict";
+
 import { ClassAndSelector } from "powerbi-visuals-utils-svgutils/lib/cssConstants";
 
 import { d3Selection, DefaultOpacity, DimmedOpacity } from "./utils";

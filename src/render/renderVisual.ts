@@ -1,7 +1,6 @@
+"use strict";
+
 import { pixelConverter as PixelConverter} from "powerbi-visuals-utils-typeutils";
-import { categoryLabelsSettings, constantLineSettings, HorizontalPosition, LayoutMode, LineStyle, Position, smallMultipleSettings, VerticalPosition, VisualSettings, Text } from "../settings";
-import { d3Selection, d3Update } from "../utils";
-import { Coordinates, IAxes, ISize, SmallMultipleOptions, VisualData, VisualDataPoint, VisualMeasureMetadata } from "../visualInterfaces";
 
 import powerbiApi from "powerbi-visuals-api";
 import IVisualHost = powerbiApi.extensibility.visual.IVisualHost;
@@ -9,36 +8,31 @@ import PrimitiveValue = powerbiApi.PrimitiveValue;
 
 import * as d3 from 'd3-selection';
 
-import * as visualUtils from "./../utils";
-
-// import svg = powerbi.extensibility.utils.svg;
-// import CssConstants = svg.CssConstants;
-// import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
-// import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
-// import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
-// import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
-// import UpdateSelection = d3.selection.Update;
-// import dataLabelUtils = powerbi.extensibility.utils.chart.dataLabel.utils;
-// import ValueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
-// import IValueFormatter = powerbi.extensibility.utils.formatting.IValueFormatter;
-// import translate = powerbi.extensibility.utils.svg.translate;
-// import ClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.ClassAndSelector;
-// import createClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.createClassAndSelector;
-// import TextProperties = powerbi.extensibility.utils.formatting.TextProperties;    
-// import TextMeasurementService = powerbi.extensibility.utils.formatting.textMeasurementService;
-import { Visual } from "../visual";
-import { WebBehaviorOptions } from "../behavior";
-import { DataLabelHelper } from "../utils/dataLabelHelper";
 import { CssConstants, manipulation as svg } from "powerbi-visuals-utils-svgutils";
-import { ClassAndSelector, createClassAndSelector } from "powerbi-visuals-utils-svgutils/lib/cssConstants";
-import { IInteractiveBehavior, IInteractivityService } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
-import { ITooltipServiceWrapper, TooltipEventArgs } from "powerbi-visuals-utils-tooltiputils";
+import ClassAndSelector = CssConstants.ClassAndSelector;
+import createClassAndSelector = CssConstants.createClassAndSelector;
+
+import { interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
+import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import IInteractivityService = interactivityBaseService.IInteractivityService;
+
+import { ITooltipServiceWrapper } from "powerbi-visuals-utils-tooltiputils";
 
 import { textMeasurementService as TextMeasurementService, interfaces, valueFormatter as ValueFormatter} from "powerbi-visuals-utils-formattingutils";
 import TextProperties = interfaces.TextProperties;
 import IValueFormatter = ValueFormatter.IValueFormatter;
-import { translate } from "powerbi-visuals-utils-svgutils/lib/manipulation";
+
 import { dataLabelUtils } from "powerbi-visuals-utils-chartutils";
+
+import { categoryLabelsSettings, constantLineSettings, HorizontalPosition, LayoutMode, LineStyle, Position, smallMultipleSettings, VerticalPosition, VisualSettings, Text } from "../settings";
+import { d3Selection, d3Update } from "../utils";
+import { Coordinates, IAxes, ISize, SmallMultipleOptions, VisualData, VisualDataPoint, VisualMeasureMetadata } from "../visualInterfaces";
+
+import * as visualUtils from "./../utils";
+
+import { Visual } from "../visual";
+import { WebBehaviorOptions } from "../behavior";
+import { DataLabelHelper } from "../utils/dataLabelHelper";
 
 module Selectors {
     export const BarSelect = CssConstants.createClassAndSelector("bar");
@@ -49,7 +43,7 @@ module Selectors {
 export class RenderVisual {
     private static Label: ClassAndSelector = createClassAndSelector("label");
     private static dataLabelMargin: number = 8;
-
+    
     public static render(
         data: VisualData,
         settings: VisualSettings,
@@ -196,8 +190,14 @@ export class RenderVisual {
                     .data(dataPointsArray);
 
         backgroundSelection
+            .exit()
+            .remove();
+
+        const backgroundSelectionEnter = backgroundSelection
             .enter()
             .append("svg:rect");
+
+        backgroundSelection = backgroundSelection.merge(backgroundSelectionEnter)
 
         backgroundSelection
             .attr(
@@ -231,16 +231,12 @@ export class RenderVisual {
             );
 
         backgroundSelection
-        .style(
-            "fill-opacity", (100 - settings.categoryLabels.transparency) / 100,
-        )
-        .style(
-            "pointer-events", "none"
-        );
-
-        backgroundSelection
-            .exit()
-            .remove();
+            .style(
+                "fill-opacity", (100 - settings.categoryLabels.transparency) / 100,
+            )
+            .style(
+                "pointer-events", "none"
+            );
     }
 
     public static renderDataLabels(
@@ -263,6 +259,10 @@ export class RenderVisual {
                     .selectAll(RenderVisual.Label.selectorName)
                     .data(dataPointsArray);
 
+        labelSelection
+            .exit()
+            .remove();
+
         let precision: number = labelSettings.precision;
 
         let precisionZeros: string = "";
@@ -272,20 +272,22 @@ export class RenderVisual {
         }
 
         let dataLabelFormatter: IValueFormatter = ValueFormatter.create({
-                                                    precision: precision,
-                                                    format: `0.${precisionZeros}%;-0.${precisionZeros}%;0.${precisionZeros}%`
-                                                    });
+            precision: precision,
+            format: `0.${precisionZeros}%;-0.${precisionZeros}%;0.${precisionZeros}%`
+        });
 
-        labelSelection
+        const labelSelectionEnter = labelSelection
             .enter()
             .append("svg:text");
+
+        labelSelection = labelSelection.merge(labelSelectionEnter);
 
         let fontSizeInPx: string = PixelConverter.fromPoint(labelSettings.fontSize);
         let fontFamily: string = labelSettings.fontFamily ? labelSettings.fontFamily : dataLabelUtils.LabelTextProperties.fontFamily;
 
         labelSelection
             .attr("transform", (p: VisualDataPoint) => {
-                return translate(p.labelCoordinates.x, p.labelCoordinates.y);
+                return svg.translate(p.labelCoordinates.x, p.labelCoordinates.y);
             });
 
         labelSelection
@@ -302,10 +304,6 @@ export class RenderVisual {
                 "pointer-events", "none"
             )
             .text((p: VisualDataPoint) => dataLabelFormatter.format(p.percentValue));
-
-        labelSelection
-            .exit()
-            .remove();
     }
 
     private static filterData(dataPoints: VisualDataPoint[], settings: categoryLabelsSettings): VisualDataPoint[] {
@@ -760,6 +758,6 @@ export class RenderVisual {
             positionAcross = maxPosition - (textWidth + marginAcross);
         }
 
-        return translate(positionAcross, positionAlong);
+        return svg.translate(positionAcross, positionAlong);
     }
 }

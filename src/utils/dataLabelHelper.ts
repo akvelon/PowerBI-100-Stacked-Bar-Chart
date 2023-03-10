@@ -1,3 +1,5 @@
+"use strict";
+
 import { categoryLabelsSettings, LabelPosition } from "../settings";
 import { Coordinates, VisualDataPoint } from "../visualInterfaces";
 

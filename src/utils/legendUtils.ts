@@ -1,3 +1,5 @@
+"use strict";
+
 import powerbiApi from "powerbi-visuals-api";
 import IViewport = powerbiApi.IViewport;
 import DataViewValueColumns = powerbiApi.DataViewValueColumns;
@@ -10,23 +12,24 @@ import IVisualHost = powerbiApi.extensibility.visual.IVisualHost;
 import ISelectionId = powerbiApi.visuals.ISelectionId;
 
 import * as d3 from 'd3-selection';
- 
+
+import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+
+import { ColorHelper } from "powerbi-visuals-utils-colorutils";
+
 import { legendInterfaces } from "powerbi-visuals-utils-chartutils";
+import ILegend = legendInterfaces.ILegend;
+import LegendPosition = legendInterfaces.LegendPosition;
+import legendProps = legendInterfaces.legendProps;
 import LegendDataPoint = legendInterfaces.LegendDataPoint;
 import LegendIcon = legendInterfaces.MarkerShape;
 import LegendData = legendInterfaces.LegendData;
 
-
-import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
-
 import { legendSettings } from "./../settings";
-
 import  * as visualUtils from "./../utils";
 import  * as metadataUtils from "./../metadataUtils";
-
-import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { DataViewConverter } from "../dataViewConverter";
-import { ILegend, LegendPosition, legendProps } from "powerbi-visuals-utils-chartutils/lib/legend/legendInterfaces";
+
 import { LegendProperties } from "../visualInterfaces";
 import { positionChartArea } from "powerbi-visuals-utils-chartutils/lib/legend/legend";
 import { update } from "powerbi-visuals-utils-chartutils/lib/legend/legendData";
